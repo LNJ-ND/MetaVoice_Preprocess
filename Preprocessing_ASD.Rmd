@@ -8,7 +8,7 @@ output: html_document
 ```{r}
 #install packages
 library(pacman, tidyverse)
-p_load('metafor','robumeta','ggplot2','boot')
+p_load('metafor','robumeta','ggplot2','boot', 'tidyverse')
 ```
 
 
@@ -340,15 +340,15 @@ ASD_final <- ASD_col[!with(ASD_col, is.na(x_1) & is.na(x_2) & is.na(SD_1) & is.n
 write.csv(ASD_final, "preprodata/ASD_final.csv")
 
 #look if pause_length is average or total
-pause_ASD <- ASD_final %>% filter(feature == "pause_length") 
-mean(pause_ASD$x_1, na.rm = TRUE)
-mean(pause_ASD$x_2, na.rm = TRUE)
-
-pause_SZ <- sz_final %>% filter(feature == "pause_total_length")
-mean(pause_SZ$x_1, na.rm = TRUE)
-mean(pause_SZ$x_2, na.rm = TRUE)
-
-pause_dur_SZ <- sz_final %>% filter(feature == "pause_duration")
-mean(pause_dur_SZ$x_1, na.rm = TRUE)
-mean(pause_dur_SZ$x_2, na.rm = TRUE)
+# pause_ASD <- ASD_final %>% filter(feature == "pause_length") 
+# mean(pause_ASD$x_1, na.rm = TRUE)
+# mean(pause_ASD$x_2, na.rm = TRUE)
+# 
+# pause_SZ <- sz_final %>% filter(feature == "pause_total_length")
+# mean(pause_SZ$x_1, na.rm = TRUE)
+# mean(pause_SZ$x_2, na.rm = TRUE)
+# 
+# pause_dur_SZ <- sz_final %>% filter(feature == "pause_duration")
+# mean(pause_dur_SZ$x_1, na.rm = TRUE)
+# mean(pause_dur_SZ$x_2, na.rm = TRUE)
 ```

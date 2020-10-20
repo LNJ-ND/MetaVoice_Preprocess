@@ -137,7 +137,7 @@ RHD$task_type[31:33] <- "constrained" # adding constrained to the constrained ex
 # task_type_spec
 RHD$task_type_spec <- str_extract(RHD$Task, "(?<=\\().+?(?=\\))")
 RHD$task_type_spec[30] <- "spontaneous"
-RHD$task_type_spec[31:33] <- "repitition"
+RHD$task_type_spec[31:33] <- "repetition"
 
 # participant_design
 RHD$participant_design <- "between"
