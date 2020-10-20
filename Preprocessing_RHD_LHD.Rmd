@@ -1,0 +1,397 @@
+---
+title: "Preprocessing_RHD"
+author: "Louise"
+date: "1/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load(tidyverse,metafor,lmerTest,readxl)
+```
+
+loading
+```{r}
+# Loading RHD data #for louise
+#RHD <- read_tsv("Data/data_RHD_meta-analysis.csv")
+
+#for nicole
+RHD <- read_tsv("rawdata/data_RHD_meta-analysis.csv")
+```
+
+study_ID, short_cite
+```{r}
+# study_ID
+RHD$study_ID <- paste(word(RHD$Article, 1), str_extract(RHD$Article, "\\d{4}[a-z]?"), sep = "")
+
+# short_cite
+RHD$short_cite <- gsub("et al", "et al.", RHD$Article)
+```
+
+long_cite
+```{r}
+# long_cite
+RHD$long_cite <- ifelse(RHD$study_ID == "Emmorey1987", RHD$long_cite <- "Emmorey, K. D. (1987). The neurological substrates for prosodic aspects of speech. Brain and Language, 30(2), 305-320.",
+                        ifelse(RHD$study_ID == "Ryalls1987", RHD$long_cite <- "Ryalls, J., Joanette, Y., & Feldman, L. (1987). An acoustic comparison of normal and righthemisphere-damaged speech prosody. Cortex, 23(4), 685-694.",
+                               ifelse(RHD$study_ID == "Behrens1988", RHD$long_cite <- "Behrens, S. J. (1988). The role of the right hemisphere in the production of linguistic stress. Brain Lang, 33(1), 104-127.",
+                                      ifelse(RHD$study_ID == "Behrens1989", RHD$long_cite <- "Behrens, S. J. (1989). Characterizing sentence intonation in a right hemisphere-damaged population. Brain and language.",
+                                             ifelse(RHD$study_ID == "Ouellette1994", RHD$long_cite <- "Ouellette, G. P., & Baum, S. R. (1994). Acoustic analysis of prosodic cues in left- and righthemisphere-damaged patients. Aphasiology, 8(3), 257-283.",
+                                                    ifelse(RHD$study_ID == "Gandour1995", RHD$long_cite <- "Gandour, J., Larsen, J., Dechongkit, S., Ponglorpisit, S., & Khunadorn, F. (1995). Speech prosody in affective contexts in Thai patients with right hemisphere lesions. Brain and Language, 51(3), 422-443.",
+                                                           ifelse(RHD$study_ID == "Balan1999", RHD$long_cite <- "Balan, A., & Gandour, J. (1999). Effect of sentence length on the production of linguistic stress by left-and right-hemisphere-damaged patients. Brain and language, 67(2), 73-94.",
+                                                                  ifelse(RHD$study_ID == "Pell1999a", RHD$long_cite <- "Pell, M. D. (1999a). Fundamental frequency encoding of linguistic and emotional prosody by right hemisphere-damaged speakers. Brain and Language, 69(2), 161-192.",
+                                                                         ifelse(RHD$study_ID == "Baum2001", RHD$long_cite <- "Baum, S. R., Marc D. Pell, Carol. (2001). Using prosody to resolve temporary syntactic ambiguities in speech production: acoustic data on brain-damaged speakers. Clin Linguist Phon, 15(6), 441-456.",
+                                                                                ifelse(RHD$study_ID == "Gandour2001", RHD$long_cite <- "Gandour, J., & Baum, S. R. (2001). Production of stress retraction by left- and right-hemispheredamaged patients. Brain Lang, 79(3), 482-494.",
+                                                                                              ifelse(RHD$study_ID == "Hird2003", RHD$long_cite <- "Hird, K., & Kirsner, K. (2003). The effect of right cerebral hemisphere damage on collaborative planning in conversation: an analysis of intentional structure. Clinical Linguistics & Phonetics, 17(4-5), 309-315.",
+                                                                                                     ifelse(RHD$study_ID == "Ross2008", RHD$long_cite <- "Ross, E. D., & Monnot, M. (2008). Neurology of affective prosody and its functional-anatomic organization in right hemisphere. Brain Lang, 104(1), 51-74.",
+                                                                                                            ifelse(RHD$study_ID == "Guranski2015", RHD$long_cite <- "Guranski, K., & Podemski, R. (2015). Emotional prosody expression in acoustic analysis in patients with right hemisphere ischemic stroke. Neurologia i Neurochirurgia Polska, 49(2), 113-120.",
+                                                                                                                   ifelse(RHD$study_ID == "Yang2016", RHD$long_cite <- "Yang, S. Y., & Van Lancker Sidtis, D. (2016). Production of Korean Idiomatic Utterances Following Left- and Right-Hemisphere Damage: Acoustic Studies. J Speech Lang Hear Res, 59(2), 267-280.",
+                                                                                                                          ifelse(RHD$study_ID == "Wright2018", RHD$long_cite <- "Wright, A., Saxena, S., Sheppard, S. M., & Hillis, A. E. (2018). Selective impairments in components of affective prosody in neurologically impaired individuals. Brain and Cognition, 124, 29-36.",
+                                                                                                                                 ifelse(RHD$study_ID == "Pell1999b", RHD$long_cite <- "Pell, M. D. (1999b). The temporal organization of affective and non-affective speech in patients with right-hemisphere infarcts. Cortex.", NA))))))))))))))))
+```
+
+doi
+```{r}
+# doi
+RHD$doi <- ifelse(RHD$study_ID == "Emmorey1987", RHD$doi <- "https://doi.org/10.1016/0093-934X(87)90105-2",
+                        ifelse(RHD$study_ID == "Ryalls1987", RHD$doi <- "https://doi.org/10.1016/S0010-9452(87)80059-X",
+                               ifelse(RHD$study_ID == "Behrens1988", RHD$doi <- "https://doi.org/10.1016/0093-934X(88)90057-0",
+                                      ifelse(RHD$study_ID == "Behrens1989", RHD$doi <- "https://doi.org/10.1016/0093-934X(89)90014-X",
+                                             ifelse(RHD$study_ID == "Ouellette1994", RHD$doi <- "https://doi.org/10.1080/02687039408248656",
+                                                    ifelse(RHD$study_ID == "Gandour1995", RHD$doi <- "https://doi.org/10.1006/brln.1995.1069",
+                                                           ifelse(RHD$study_ID == "Balan1999", RHD$doi <- "https://doi.org/10.1006/brln.1998.2035",
+                                                                  ifelse(RHD$study_ID == "Pell1999a", RHD$doi <- "https://doi.org/10.1006/brln.1999.2065",
+                                                                         ifelse(RHD$study_ID == "Baum2001", RHD$doi <- "https://doi.org/10.1080/02699200110044813",
+                                                                                ifelse(RHD$study_ID == "Gandour2001", RHD$doi <- "https://doi.org/10.1006/brln.2001.2562",
+                                                                                              ifelse(RHD$study_ID == "Hird2003", RHD$doi <- "https://doi.org/10.1080/0269920031000080037",
+                                                                                                     ifelse(RHD$study_ID == "Ross2008", RHD$doi <- "https://doi.org/10.1016/j.bandl.2007.04.007",
+                                                                                                            ifelse(RHD$study_ID == "Guranski2015", RHD$doi <- "https://doi.org/10.1016/j.pjnns.2015.03.004",
+                                                                                                                   ifelse(RHD$study_ID == "Yang2016", RHD$doi <- "https://doi.org/10.1044/2015_JSLHR-L-15-0109",
+                                                                                                                          ifelse(RHD$study_ID == "Wright2018", RHD$doi <- "https://doi.org/10.1016/j.bandc.2018.04.001",
+                                                                                                                                 ifelse(RHD$study_ID == "Pell1999b", RHD$doi <- "https://doi.org/10.1016/S0010-9452(08)70813-X", NA))))))))))))))))
+```
+
+peer_reviewed
+```{r}
+# peer_reviewed
+RHD$peer_reviewed <- ifelse(RHD$study_ID == "Emmorey1987", "yes",
+                        ifelse(RHD$study_ID == "Ryalls1987", "yes",
+                               ifelse(RHD$study_ID == "Behrens1988", "yes",
+                                      ifelse(RHD$study_ID == "Behrens1989", "yes",
+                                             ifelse(RHD$study_ID == "Ouellette1994", "yes",
+                                                    ifelse(RHD$study_ID == "Gandour1995", "yes",
+                                                           ifelse(RHD$study_ID == "Balan1999", "yes",
+                                                                  ifelse(RHD$study_ID == "Pell1999a", "yes",
+                                                                         ifelse(RHD$study_ID == "Baum2001", "yes",
+                                                                                ifelse(RHD$study_ID == "Gandour2001", "yes",
+                                                                                              ifelse(RHD$study_ID == "Hird2003", "yes",
+                                                                                                     ifelse(RHD$study_ID == "Ross2008", "yes",
+                                                                                                            ifelse(RHD$study_ID == "Guranski2015", "yes",
+                                                                                                                   ifelse(RHD$study_ID == "Yang2016", "yes",
+                                                                                                                          ifelse(RHD$study_ID == "Wright2018", "yes",
+                                                                                                                                 ifelse(RHD$study_ID == "Pell1999b", "yes", NA))))))))))))))))
+```
+
+coder, (commented out expt_num), expt_unique
+```{r}
+# coder
+RHD$coder <- "LNJ, ND"
+
+# # expt_num
+# RHD$expt_num <- paste(RHD$study_ID, RHD$`Within-paper_differentiator`, sep = "")
+# RHD$expt_num <- make.unique(RHD$expt_num)
+# RHD$expt_num <- str_extract(RHD$expt_num, "\\d+$")
+
+# expt_unique
+RHD$expt_unique <- make.unique(RHD$short_cite)
+```
+
+same_sample
+```{r}
+# same_sample
+RHD$same_sample <- ifelse(RHD$study_ID == "Emmorey1987", RHD$same_sample <- "A",
+                        ifelse(RHD$study_ID == "Ryalls1987", RHD$same_sample <- "B",
+                               ifelse(RHD$study_ID == "Behrens1988" | RHD$study_ID == "Behrens1989", RHD$same_sample <- "C",
+                                             ifelse(RHD$study_ID == "Ouellette1994", RHD$same_sample <- "D",
+                                                    ifelse(RHD$study_ID == "Gandour1995", RHD$same_sample <- "E",
+                                                           ifelse(RHD$study_ID == "Balan1999", RHD$same_sample <- "F",
+                                                                  ifelse(RHD$study_ID == "Pell1999a", RHD$same_sample <- "G",
+                                                                         ifelse(RHD$study_ID == "Baum2001", RHD$same_sample <- "H",
+                                                                                ifelse(RHD$study_ID == "Gandour2001", RHD$same_sample <- "I",
+                                                                                              ifelse(RHD$study_ID == "Hird2003", RHD$same_sample <- "J",
+                                                                                                     ifelse(RHD$study_ID == "Ross2008", RHD$same_sample <- "K",
+                                                                                                            ifelse(RHD$study_ID == "Guranski2015", RHD$same_sample <- "L",
+                                                                                                                   ifelse(RHD$study_ID == "Yang2016", RHD$same_sample <- "M",
+                                                                                                                          ifelse(RHD$study_ID == "Wright2018", RHD$same_sample <- "N",
+                                                                                                                                 ifelse(RHD$study_ID == "Pell1999b", RHD$same_sample <- "O", NA)))))))))))))))
+
+```
+
+task_type, task_type_spec, participant_design
+```{r}
+# task_type
+RHD$task_type <- str_extract(RHD$Task, "[Cc]onstrained") #[Cc]onstrained" if also including free and constrained
+RHD$task_type <- ifelse(RHD$task_type == "Constrained", "constrained", NA)
+RHD$task_type[is.na(RHD$task_type)] <- "free"
+RHD$task_type[31:33] <- "constrained" # adding constrained to the constrained experiments within this study (the first one is free, and these three are constrained)
+
+# task_type_spec
+RHD$task_type_spec <- str_extract(RHD$Task, "(?<=\\().+?(?=\\))")
+RHD$task_type_spec[30] <- "spontaneous"
+RHD$task_type_spec[31:33] <- "repitition"
+
+# participant_design
+RHD$participant_design <- "between"
+
+# group_name_1, group_name_2
+RHD$group_name_1 <- "RHD"
+RHD$group_name_2 <- "HC"
+RHD$group_name_1_LHD <- "LHD"
+```
+
+feature
+```{r}
+# feature (F0-variation, Fo-other, Pause-duration, Speech-duration, Intensity, Intensity-variation)
+RHD$feature <- ifelse(RHD$Feature == "F0-variation", RHD$feature <- "pitch_f0_variability",
+                        ifelse(RHD$Feature == "Fo-other", RHD$feature <- "pitch_f0",
+                               ifelse(RHD$Feature == "Pause-duration", RHD$feature <- "pause_duration",
+                                      ifelse(RHD$Feature == "Speech-duration", RHD$feature <- "speech_duration",
+                                             ifelse(RHD$Feature == "Intensity", RHD$feature <- "intensity_mean",
+                                                    ifelse(RHD$Feature == "Intensity-variation", RHD$feature <- "intensity_variability", NA))))))
+```
+
+prosody_type
+```{r}
+RHD$prosody_type <- ifelse(RHD$Prosody_Type == "Ling", "linguistic", ifelse(RHD$Prosody_Type == "Emo", "emotional", NA))
+```
+
+Select, rename, rearrange
+```{r}
+RHD_col <- RHD %>% 
+  select(
+    study_ID,
+    short_cite,
+    long_cite,
+    publication_year = Year,
+    doi,
+    peer_reviewed,
+    coder,
+    expt_unique,
+    expt_condition = 'Within-paper_differentiator',
+    same_sample,
+    task_type,
+    task_type_spec,
+    participant_design,
+    native_language = Language,
+    group_name_1,
+    group_name_2,
+    n_1 = RHD_N,
+    n_2 = NBD_N,
+    prosody_type,
+    feature,
+    unit = Measure,
+    x_1 = RHD_Mean,
+    x_2 = NBD_Mean,
+    SD_1 = RHD_SD,
+    SD_2 = NBD_SD,
+    notes = Notes
+  )
+
+# remove rows with empty values
+RHD_final <- RHD_col[!with(RHD_col, is.na(x_1) & is.na(x_2) & is.na(SD_1) & is.na(SD_2)),]
+
+LHD_col <- RHD %>% 
+  select(
+    study_ID,
+    short_cite,
+    long_cite,
+    publication_year = Year,
+    doi,
+    peer_reviewed,
+    coder,
+    expt_unique,
+    expt_condition = 'Within-paper_differentiator',
+    same_sample,
+    task_type,
+    task_type_spec,
+    participant_design,
+    native_language = Language,
+    group_name_1_LHD,
+    group_name_2,
+    n_1 = LHD_N,
+    n_2 = NBD_N,
+    prosody_type,
+    feature,
+    unit = Measure,
+    x_1 = LHD_Mean,
+    x_2 = NBD_Mean,
+    SD_1 = LHD_SD,
+    SD_2 = NBD_SD,
+    notes = Notes
+  )
+
+# remove rows with empty values
+LHD_final <- LHD_col[!with(LHD_col, is.na(x_1) & is.na(x_2) & is.na(SD_1) & is.na(SD_2)),]
+
+```
+
+
+```{r}
+# make SDs for SD = 0 
+# I would do data inputation: take the studies that have meaningful sd's, create a model predicting sd from #mean, sample size and potentially other relevant factors, check how good the predictions are and if so, #apply the model to the data from the studies without meaningful sd's.
+
+# turn negative into absolute values
+RHD_final$SD_1 <- abs(RHD_final$SD_1)
+RHD_final$SD_2 <- abs(RHD_final$SD_2)
+
+### for SD_1 (RHD): problem in intensity_variability
+intensity_0_RHD1 <- RHD_final %>% subset(SD_1 == 0)
+intensity_RHD1 <- RHD_final %>% subset(feature == "intensity_variability" & SD_1 > 0)
+mean(intensity_RHD1$SD_1)
+
+# models, x = mean, n = sample size
+m1_RHD1 <- lm(SD_1 ~ x_1, intensity_RHD1)
+m2_RHD1 <- lm(SD_1 ~ x_1 + n_1, intensity_RHD1)
+m3_RHD1 <- lm(SD_1 ~ x_1*n_1, intensity_RHD1) 
+summary(m1_RHD1)
+summary(m2_RHD1)
+summary(m3_RHD1)
+
+# test on actual data
+p1_RHD1 <- predict(m1_RHD1, intensity_RHD1)
+p2_RHD1 <- predict(m2_RHD1, intensity_RHD1)
+p3_RHD1 <- predict(m3_RHD1, intensity_RHD1)
+
+# RMSE: we need to compare it to the actual data and not to 0?
+ModelMetrics::rmse(intensity_RHD1$SD_1, p1_RHD1)
+ModelMetrics::rmse(intensity_RHD1$SD_1, p2_RHD1)
+ModelMetrics::rmse(intensity_RHD1$SD_1, p3_RHD1)
+
+# apply to real data
+pp_RHD1 <- predict(m3_RHD1, intensity_0_RHD1)
+pp_RHD1
+
+RHD_final$SD_1[RHD_final$SD_1 == 0] <- predict(m3_RHD1, intensity_0_RHD1)
+
+### for SD_2 (HC): problem in intensity_variability
+intensity_0_RHD2 <- RHD_final %>% subset(SD_2 == 0)
+intensity_RHD2 <- RHD_final %>% subset(feature == "intensity_variability" & SD_2 > 0)
+mean(intensity_RHD2$SD_2, na.rm = T)
+
+# models, x = mean, n = sample size
+m1_RHD2 <- lm(SD_2 ~ x_2, intensity_RHD2)
+m2_RHD2 <- lm(SD_2 ~ x_2 + n_2, intensity_RHD2)
+m3_RHD2 <- lm(SD_2 ~ x_2*n_2, intensity_RHD2) 
+# m4 <- lm(SD_2 ~ x_2 + n_2 + unit, intensity) 
+summary(m1_RHD2)
+summary(m2_RHD2)
+summary(m3_RHD2)
+# summary(m4)
+
+# test on actual data
+p1_RHD2 <- predict(m1_RHD2, intensity_RHD2)
+p2_RHD2 <- predict(m2_RHD2, intensity_RHD2)
+p3_RHD2 <- predict(m3_RHD2, intensity_RHD2)
+#p4 <- predict(m4, intensity)
+
+# RMSE: we need to compare it to the actual data and not to 0?
+ModelMetrics::rmse(intensity_RHD2$SD_2, p1_RHD2)
+ModelMetrics::rmse(intensity_RHD2$SD_2, p2_RHD2)
+ModelMetrics::rmse(intensity_RHD2$SD_2, p3_RHD2) #best
+#ModelMetrics::rmse(intensity$SD_2, p4)
+
+# apply to real data
+pp_RHD2 <- predict(m3_RHD2, intensity_0_RHD2)
+pp_RHD2
+
+#save to data
+RHD_final$SD_2[RHD_final$SD_2 == 0 & !is.na(RHD_final$SD_2)] <- predict(m3_RHD2, intensity_0_RHD2)
+
+mean(RHD_final$SD_1)
+mean(RHD_final$SD_2)
+
+
+#### LEFT HEMISPHERE DAMAGE
+
+LHD_final$SD_1 <- abs(LHD_final$SD_1)
+LHD_final$SD_2 <- abs(LHD_final$SD_2)
+
+### for SD_1 (LHD)
+intensity_0_LHD1 <- LHD_final %>% subset(SD_1 == 0)
+intensity_LHD1 <- LHD_final %>% subset(feature == "intensity_variability" & SD_1 > 0)
+mean(intensity_LHD1$SD_1, na.rm = T)
+
+# models, x = mean, n = sample size
+m1_LHD1 <- lm(SD_1 ~ x_1, intensity_LHD1)
+m2_LHD1 <- lm(SD_1 ~ x_1 + n_1, intensity_LHD1)
+m3_LHD1 <- lm(SD_1 ~ x_1*n_1, intensity_LHD1) 
+summary(m1_LHD1)
+summary(m2_LHD1)
+summary(m3_LHD1)
+
+# test on actual data
+p1_LHD1 <- predict(m1_LHD1, intensity_LHD1)
+p1_LHD1
+p2_LHD1 <- predict(m2_LHD1, intensity_LHD1)
+p2_LHD1
+p3_LHD1 <- predict(m3_LHD1, intensity_LHD1)
+p3_LHD1
+
+# RMSE: we need to compare it to the actual data and not to 0?
+ModelMetrics::rmse(intensity_LHD1$SD_1, p1_LHD1)
+ModelMetrics::rmse(intensity_LHD1$SD_1, p2_LHD1)
+ModelMetrics::rmse(intensity_LHD1$SD_1, p3_LHD1) #best
+
+# apply to real data
+pp_LHD1 <- predict(m3_LHD1, intensity_0_LHD1)
+pp_LHD1
+
+# save to data
+LHD_final$SD_1[LHD_final$SD_1 == 0 & !is.na(LHD_final$SD_1)] <- predict(m3_LHD1, intensity_0_LHD1)
+
+
+### SD_2
+intensity_0_LHD2 <- LHD_final %>% subset(SD_2 == 0)
+intensity_LHD2 <- LHD_final %>% subset(feature == "intensity_variability" & SD_2 > 0)
+mean(intensity_LHD2$SD_2, na.rm = T)
+
+# models, x = mean, n = sample size
+m1_LHD2 <- lm(SD_2 ~ x_2, intensity_LHD2)
+m2_LHD2 <- lm(SD_2 ~ x_2 + n_2, intensity_LHD2)
+m3_LHD2 <- lm(SD_2 ~ x_2*n_2, intensity_LHD2) 
+summary(m1_LHD2)
+summary(m2_LHD2)
+summary(m3_LHD2)
+
+# test on actual data
+p1_LHD2 <- predict(m1_LHD2, intensity_LHD2)
+p2_LHD2 <- predict(m2_LHD2, intensity_LHD2)
+p3_LHD2 <- predict(m3_LHD2, intensity_LHD2)
+p3_LHD2
+
+# RMSE: we need to compare it to the actual data and not to 0?
+ModelMetrics::rmse(intensity_LHD2$SD_2, p1_LHD2)
+ModelMetrics::rmse(intensity_LHD2$SD_2, p2_LHD2)
+ModelMetrics::rmse(intensity_LHD2$SD_2, p3_LHD2) #best
+
+# apply to real data
+pp_LHD2 <- predict(m3_LHD2, intensity_0_LHD2)
+pp_LHD2
+
+LHD_final$SD_2[LHD_final$SD_2 == 0 & !is.na(LHD_final$SD_2)] <- predict(m3_LHD2, intensity_0_LHD2)
+
+
+```
+
+```{r}
+# write df
+RHD_final <- write_csv(RHD_final, "preprodata/RHD_final.csv")
+LHD_final <- write_csv(LHD_final, "preprodata/LHD_final.csv")
+
+```
+
+
+```{r}
+# Remember: make sure that same_sample corresponds to same_infant
+```
+
+

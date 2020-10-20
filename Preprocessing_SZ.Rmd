@@ -1,0 +1,290 @@
+---
+title: "Preprocessing_SZ"
+author: "Louise"
+date: "29/9/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load(tidyverse,metafor,lmerTest,readxl)
+```
+
+
+```{r}
+#load dataframe (for louise)
+d <- as.data.frame(read_excel("C:/Users/louis/OneDrive - Aarhus universitet/AU Onedrive - RIGTIG/- 5. Semester/LNJ-ND/MetaLabPreprocess/Data/Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx"))
+
+#load dataframe (for nicole)
+d <- as.data.frame(read_excel("rawdata/Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx"))
+
+#only want SZ
+sz <- d %>% subset(DIAGNOSIS == "SZ")
+nrow(sz)
+
+# Renaming rownames
+rownames(sz) <- NULL
+
+# Putting in missing Year_publication
+sz[50,6] <- 2019
+sz[51,6] <- 2018
+
+# Correcting Martinez e al. to et al.
+sz[39,7] <- "Martinez et al. (2015)"
+
+# Correcting first study to the right title and author
+sz[1,4] <- "Is this my voice or yours? The role of emotion and acoustic quality in self-other voice discrimination in schizophrenia"
+sz[1,5] <- "Pinheiro, A.P., Rezaii, N., Rauber, A., Niznikiewicz, M."
+
+#creating study_ID from two columns
+sz$study_ID <- paste(word(sz$Article, 1), sz$Year_publication, sep = "")
+
+# long_cite, peer_reviewed, coder
+sz$long_cite <- c(
+  "Pinheiro, A.P., Rezaii, N., Rauber, A., Niznikiewicz, M., 2016. Is this my voice or yours? The role of emotion and acoustic quality in self-other voice discrimination in schizophrenia. Cogn. Neuropsychiatry 21, 335–353.",
+  "Zhang, J., Zhongde, P. A. N., Chao, G. U. I., Jie, Z. H. U., & Donghong, C. U. I. (2016). Clinical investigation of speech signal features among patients with schizophrenia. Shanghai archives of psychiatry, 28(2), 95.",
+  "Bernardini, F., Lunden, A., Covington, M., Broussard, B., Halpern, B., Alolayan, Y., ... & Attademo, L. (2016). Associations of acoustically measured tongue/jaw movements and portion of time speaking with negative symptom severity in patients with schizophrenia in Italy and the United States. Psychiatry Research, 239, 253-258.",
+  "Bernardini, F., Lunden, A., Covington, M., Broussard, B., Halpern, B., Alolayan, Y., ... & Attademo, L. (2016). Associations of acoustically measured tongue/jaw movements and portion of time speaking with negative symptom severity in patients with schizophrenia in Italy and the United States. Psychiatry Research, 239, 253-258.",
+  "Martínez-Sánchez, F., Muela-Martínez, J. A., Cortés-Soto, P., Meilán, J. J. G., Ferrándiz, J. A. V., Caparrós, A. E., & Valverde, I. M. P. (2015). Can the acoustic analysis of expressive prosody discriminate schizophrenia?. The Spanish journal of psychology, 18.",
+  "Alpert, M., Shaw, R. J., Pouget, E. R., & Lim, K. O. (2002). A comparison of clinical ratings with vocal acoustic measures of flat affect and alogia. Journal of Psychiatric Research, 36(5), 347-353.",
+  "Rapcan, V., D’Arcy, S., Yeap, S., Afzal, N., Thakore, J., & Reilly, R. B. (2010). Acoustic and temporal analysis of speech: A potential biomarker for schizophrenia. Medical engineering & physics, 32(9), 1074-1079.",
+  "Cannizzaro, M. S., Cohen, H., Rappard, F., & Snyder, P. J. (2005). Bradyphrenia and bradykinesia both contribute to altered speech in schizophrenia: a quantitative acoustic study. Cognitive and behavioral neurology, 18(4), 206-210.",
+  "Cannizzaro, M. S., Cohen, H., Rappard, F., & Snyder, P. J. (2005). Bradyphrenia and bradykinesia both contribute to altered speech in schizophrenia: a quantitative acoustic study. Cognitive and behavioral neurology, 18(4), 206-210.",
+  "Graux, J., Courtine, J. B., Bruneau, N., Camus, V., & El-Hage, W. (2015). Higher fundamental voice frequency is related to extrapyramidal symptoms in schizophrenia. Schizophrenia research, 2(161), 517-518.",
+  "McGilloway, S., Cooper, S. J., & Douglas-Cowie, E. (2003). Can patients with chronic schizophrenia express emotion? A speech analysis. Schizophrenia research, 64(2-3), 189.",
+  "Sison, C. E., Alpert, M., Fudge, R., & Stern, R. M. (1996). Constricted expressiveness and psychophysiological reactivity in schizophrenia. The Journal of nervous and mental disease, 184(10), 589-597.",
+  "Cohen, A. S., Alpert, M., Nienow, T. M., Dinzeo, T. J., & Docherty, N. M. (2008). Computerized measurement of negative symptoms in schizophrenia. Journal of psychiatric research, 42(10), 827-836.",
+  "Cohen, A. S., Mitchell, K. R., Strauss, G. P., Blanchard, J. J., Buchanan, R. W., Kelly, D. L., ... & Carpenter, W. T. (2017). The effects of oxytocin and galantamine on objectively-defined vocal and facial expression: Data from the CIDAR study. Schizophrenia research, 188, 141.",
+  "Cohen, A. S., Kim, Y., & Najolia, G. M. (2013). Psychiatric symptom versus neurocognitive correlates of diminished expressivity in schizophrenia and mood disorders. Schizophrenia research, 146(1-3), 249-253.",
+  "Cohen, A. S., Najolia, G. M., Kim, Y., & Dinzeo, T. J. (2012). On the boundaries of blunt affect/alogia across severe mental illness: implications for Research Domain Criteria. Schizophrenia research, 140(1-3), 41-45.",
+  "Alpert, M., Kotsaftis, A., & Pouget, E. R. (1997). Speech fluency and schizophrenic negative signs. Schizophrenia Bulletin, 23(2), 171-177.",
+  "Alpert, M., Rosenberg, S. D., Pouget, E. R., & Shaw, R. J. (2000). Prosody and lexical accuracy in flat affect schizophrenia. Psychiatry research, 97(2-3), 107-118.",
+  "Alpert, M., & Anderson, L. T. (1977). Imagery mediation of vocal emphasis in flat affect. Archives of General Psychiatry, 34(2), 208-212.",
+  "Covington, M. A., Lunden, S. A., Cristofaro, S. L., Wan, C. R., Bailey, C. T., Broussard, B., ... & Compton, M. T. (2012). Phonetic measures of reduced tongue movement correlate with negative symptom severity in hospitalized patients with first-episode schizophrenia-spectrum disorders. Schizophrenia research, 142(1-3), 93-95.",
+  "Matsumoto, K., Kircher, T., Stokes, P., Brammer, M. J., LIddle, P., & McGuire, P. K. (2013). Frequency and neural correlates of pauses in patients with formal thought disorder. Frontiers in psychiatry, 4, 127.",
+  "Alpert, M., Clark, A., & Pouget, E. R. (1994). The syntactic role of pauses in the speech of schizophrenic patients with alogia. Journal of Abnormal Psychology, 103(4), 750.",
+  "Kring, A. M., Alpert, M., Neale, J. M., & Harvey, P. D. (1994). A multimethod, multichannel assessment of affective flattening in schizophrenia. Psychiatry Research, 54(2), 211-222.",
+  "Pinheiro, A. P., Rezaii, N., Rauber, A., Nestor, P. G., Spencer, K. M., & Niznikiewicz, M. (2017). Emotional self–other voice processing in schizophrenia and its relationship with hallucinations: ERP evidence. Psychophysiology, 54(9), 1252-1265.",
+  "Resnick, H. S., & Oltmanns, T. F. (1984). Hesitation patterns in the speech of thought-disordered schizophrenic and manic patients. Journal of Abnormal Psychology, 93(1), 80.",
+  "Mandal, M. K., Srivastava, P., & Singh, S. K. (1990). Paralinguistic characteristics of speech in schizophrenics and depressives. Journal of psychiatric research, 24(2), 191-196.",
+  "Tavano, A., Sponda, S., Fabbro, F., Perlini, C., Rambaldelli, G., Ferro, A., ... & Brambilla, P. (2008). Specific linguistic and pragmatic deficits in Italian patients with schizophrenia. Schizophrenia Research, 102(1-3), 53-62.",
+  "Tavano, A., Sponda, S., Fabbro, F., Perlini, C., Rambaldelli, G., Ferro, A., ... & Brambilla, P. (2008). Specific linguistic and pragmatic deficits in Italian patients with schizophrenia. Schizophrenia Research, 102(1-3), 53-62.",
+  "Perlini, C., Marini, A., Garzitto, M., Isola, M., Cerruti, S., Marinelli, V., ... & Bellani, M. (2012). Linguistic production and syntactic comprehension in schizophrenia and bipolar disorder. Acta Psychiatrica Scandinavica, 126(5), 363-376.",
+  "Rutter, D. R. (1977). Speech patterning in recently admitted and chronic long‐stay schizophrenic patients. British Journal of Social and Clinical Psychology, 16(1), 47-55.",
+  "Rutter, D. R. (1977). Speech patterning in recently admitted and chronic long‐stay schizophrenic patients. British Journal of Social and Clinical Psychology, 16(1), 47-55.",
+  "Rutter, D. R. (1977). Speech patterning in recently admitted and chronic long‐stay schizophrenic patients. British Journal of Social and Clinical Psychology, 16(1), 47-55.",
+  "St-Hilaire, A., Cohen, A. S., & Docherty, N. M. (2008). Emotion word use in the conversational speech of schizophrenia patients. Cognitive neuropsychiatry, 13(4), 343-356.",
+  "Shaw, R. J., Dong, M., Lim, K. O., Faustman, W. O., Pouget, E. R., & Alpert, M. (1999). The relationship between affect expression and affect recognition in schizophrenia. Schizophrenia Research, 37(3), 245-250.",
+  "Docherty, N. M. (2012). Missing referents, psychotic symptoms, and discriminating the internal from the externalized. Journal of abnormal psychology, 121(2), 416.",
+  "Wan, M. W., Penketh, V., Salmon, M. P., & Abel, K. M. (2008). Content and style of speech from mothers with schizophrenia towards their infants. Psychiatry Research, 159(1-2), 109-114.",
+  "Rochester, S. R., Thurston, S., & Rupp, J. (1977). Hesitations as clues to failures in coherence: A study of the thought-disordered speaker. Sentence Production: Developments in theory and research.",
+  "Tolkmitt, F., Helfrich, H., Standke, R., & Scherer, K. R. (1982). Vocal indicators of psychiatric treatment effects in depressives and schizophrenics. Journal of communication disorders, 15(3), 209-222.",
+  "Martínez, A., Felizzola Donado, C. A., & Matallana Eslava, D. L. (2015). Spontaneous speech prosody and discourse analysis in schizophrenia and Fronto Temporal Dementia (FTD) patients. Revista colombiana de psiquiatria, 44(1), 13-19.",
+  "Compton, M. T., Lunden, A., Cleary, S. D., Pauselli, L., Alolayan, Y., Halpern, B., ... & Bernardini, F. (2018). The aprosody of schizophrenia: Computationally derived acoustic phonetic underpinnings of monotone speech. Schizophrenia research, 197, 392-399.",
+  "Compton, M. T., Lunden, A., Cleary, S. D., Pauselli, L., Alolayan, Y., Halpern, B., ... & Bernardini, F. (2018). The aprosody of schizophrenia: Computationally derived acoustic phonetic underpinnings of monotone speech. Schizophrenia research, 197, 392-399.",
+  "Salomé, F., Boyer, P., & Fayol, M. (2002). Written but not oral verbal production is preserved in young schizophrenic patients. Psychiatry research, 111(2-3), 137-145.",
+  "Alpert, M., Pouget, E. R., & Silva, R. (1995). Cues to the assessment of affects and moods: Speech fluency and pausing. Psychopharmacology bulletin.",
+  "Kliper, R., Vaizman, Y., Weinshall, D., & Portuguese, S. (2010). Evidence for depression and schizophrenia in speech prosody. In Third ISCA Workshop on Experimental Linguistics.",
+  "Kliper, R., Portuguese, S., & Weinshall, D. (2015, September). Prosodic analysis of speech and the underlying mental state. In International Symposium on Pervasive Computing Paradigms for Mental Health (pp. 52-62). Springer, Cham.",
+  "Ross, E. D., Orbelo, D. M., Cartwright, J., Hansel, S., Burgard, M., Testa, J. A., & Buck, R. (2001). Affective-prosodic deficits in schizophrenia: profiles of patients with brain damage and comparison with relation to schizophrenic symptoms. Journal of Neurology, Neurosurgery & Psychiatry, 70(5), 597-604.",
+  "Ross, E. D., Orbelo, D. M., Cartwright, J., Hansel, S., Burgard, M., Testa, J. A., & Buck, R. (2001). Affective-prosodic deficits in schizophrenia: profiles of patients with brain damage and comparison with relation to schizophrenic symptoms. Journal of Neurology, Neurosurgery & Psychiatry, 70(5), 597-604.",
+  "Meaux, L. T., Mitchell, K. R., & Cohen, A. S. (2018). Blunted vocal affect and expression is not associated with schizophrenia: A computerized acoustic analysis of speech under ambiguous conditions. Comprehensive Psychiatry, 83, 84-88.",
+  "Meaux, L. T., Mitchell, K. R., & Cohen, A. S. (2018). Blunted vocal affect and expression is not associated with schizophrenia: A computerized acoustic analysis of speech under ambiguous conditions. Comprehensive Psychiatry, 83, 84-88.",
+  "Çokal, D., Zimmerer, V., Turkington, D., Ferrier, N., Varley, R., Watson, S., & Hinzen, W. (2019). Disturbing the rhythm of thought: Speech pausing patterns in schizophrenia, with and without formal thought disorder. PloS one, 14(5), e0217404.",
+  "Le, T. P. (2018). Vocal Expression In Schizophrenia: Examining The Role Of Vocal Accommodation In Clinical Ratings Of Speech."
+)
+
+sz$doi <- c(
+  "https://doi.org/10.1080/13546805.2016.1208611",
+  "https://doi.org/10.11919/j.issn.1002-0829.216025",
+  "https://doi.org/10.1016/j.psychres.2016.03.037",
+  "https://doi.org/10.1016/j.psychres.2016.03.037",
+  "https://doi.org/10.1017/sjp.2015.85",
+  "https://doi.org/10.1016/S0022-3956(02)00016-X",
+  "https://doi.org/10.1016/j.medengphy.2010.07.013",
+  "https://doi.org/10.1097/01.wnn.0000185278.21352.e5",
+  "https://doi.org/10.1097/01.wnn.0000185278.21352.e5",
+  "https://doi.org/10.1016/j.schres.2014.10.045",
+  "https://doi.org/10.1016/S0920-9964(03)00012-4",
+  NA,
+  "https://doi.org/10.1016/j.jpsychires.2007.08.008",
+  "https://doi.org/10.1016/j.schres.2017.01.028",
+  "https://doi.org/10.1016/j.schres.2013.02.002",
+  "https://doi.org/10.1016/j.schres.2012.07.001",
+  "https://doi.org/10.1093/schbul/23.2.171",
+  "https://doi.org/10.1016/S0165-1781(00)00231-6",
+  "https://doi.org/10.1001/archpsyc.1977.01770140098011",
+  "https://doi.org/10.1016/j.schres.2012.10.005",
+  "https://doi.org/10.3389/fpsyt.2013.00127",
+  "https://doi.org/10.1037/0021-843X.103.4.750",
+  "https://doi.org/10.1016/0165-1781(94)90008-6",
+  "https://doi.org/10.1111/psyp.12880",
+  "https://doi.org/10.1037/0021-843X.93.1.80",
+  "https://doi.org/10.1016/0022-3956(90)90059-Y",
+  "https://doi.org/10.1016/j.schres.2008.02.008",
+  "https://doi.org/10.1016/j.schres.2008.02.008",
+  "https://doi.org/10.1111/j.1600-0447.2012.01864.x",
+  "https://doi.org/10.1111/j.2044-8260.1977.tb01002.x",
+  "https://doi.org/10.1111/j.2044-8260.1977.tb01002.x",
+  "https://doi.org/10.1111/j.2044-8260.1977.tb01002.x",
+  "https://doi.org/10.1080/13546800802250560",
+  "https://doi.org/10.1016/S0920-9964(98)00172-8",
+  "https://doi.org/10.1037/a0026348",
+  "https://doi.org/10.1016/j.psychres.2007.05.012",
+  NA,
+  "https://doi.org/10.1016/0021-9924(82)90034-X",
+  "http://dx.doi.org/10.1016/j.rcp.2015.01.003.",
+  "https://doi.org/10.1016/j.schres.2018.01.007",
+  "https://doi.org/10.1016/j.schres.2018.01.007",
+  "https://doi.org/10.1016/S0165-1781(02)00142-7",
+  NA, #affective cues
+  "https://doi.org/10.36505/ExLing-2010/03/0022/000142",
+  "https://doi.org/10.1007/978-3-319-32270-4_6",
+  "http://dx.doi.org/10.1136/jnnp.70.5.597",
+  "http://dx.doi.org/10.1136/jnnp.70.5.597",
+  "https://doi.org/10.1016/j.comppsych.2018.03.009",
+  "https://doi.org/10.1016/j.comppsych.2018.03.009",
+  "https://doi.org/10.1371/journal.pone.0217404",
+  NA
+  )
+sz$peer_reviewed <- c("yes", NA, rep("yes", 16), "yes", rep("yes", 17), NA, rep("yes", 6), NA, NA, rep("yes", 5), NA)
+sz$coder <- "LNJ, ND"
+
+# expt_unqiue from short cite (= Article)
+sz$expt_unique <- make.unique(sz$Article)
+
+# expt_num
+# sz$expt_num <- make.unique(sz$Article)
+# sz$expt_num <- str_extract(sz$expt_num, "\\d+$")
+
+# expt_num manually
+# sz$expt_num <- c(rep(NA, 2), 1, 2, rep(NA, 3), 1, 2, rep(NA, 17), 1, 2, NA, 1, 2, 3, rep(NA, 13), 1, 2, 1, 2, rep(NA, 2))
+
+# same_sample
+sz$same_sample <- c("A", "B", "C", "C", "D", "E", "F", "G", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ", "AK", "AK", "AL", "AM", "AN", "AO", "AP", "AP", "AQ", "AQ", "AR", "AS")
+
+# TYPE_OF_TASK - To lower
+sz$TYPE_OF_TASK <- tolower(sz$TYPE_OF_TASK)
+# TYPE_OF_TASK - constr -> constrained
+sz$TYPE_OF_TASK <- ifelse(sz$TYPE_OF_TASK == "constr", "constrained", sz$TYPE_OF_TASK)
+
+# participant_design
+sz$participant_design <- "between"
+
+# native_lang
+sz$native_language <- NA
+  
+# group_name_1, group_name_2
+sz$group_name_1 <- "SZ"
+sz$group_name_2 <- "HC"
+
+# Long format put down all the feauture columns 
+sz_long <- sz %>% 
+  gather(column, cell, 28:147, factor_key = TRUE) 
+  #extract(col = "column", into = c("condition", "measure"), regex = ".*_(.*)_(.*)", remove = FALSE)
+
+#make 4 different types of information: SZ -> group 1, HC -> group 2
+sz_long$measure <- ifelse(grepl("SZ_M$", sz_long$column), "x_1",
+                    ifelse(grepl("HC_M$", sz_long$column), "x_2",
+                     ifelse(grepl("SZ_SD$", sz_long$column), "SD_1",
+                      ifelse(grepl("HC_SD$", sz_long$column), "SD_2",
+                      "unit"))))
+
+
+original_columns <- as.data.frame(unique(sz_long$column))
+
+#list of features names that we want, 5: unit, x_1, x_2, SD_1, SD_2
+feature <- c(rep("speech_duration", 5), #speech duration speech_duration
+            rep("speech_rate", 5),
+            rep("speech_percentage", 5),
+            rep("pause_duration", 5),
+            rep("pause_number", 5),
+            rep("pause_total_length", 5),
+            rep("response_latency", 5),
+            rep("pause_variability", 5), # only two values
+            rep("pitch_f0", 5),
+            rep("pitch_f1", 5),
+            rep("pitch_f2", 5),
+            rep("pitch_f3", 5),
+            rep("pitch_f4", 5),
+            rep("pitch_f5", 5),
+            rep("pitch_f6", 5),
+            rep("pitch_f0_variability", 5),
+            rep("pitch_f0_entropy", 5),
+            rep("pitch_f1_variability", 5),
+            rep("pitch_f2_variability", 5),
+            rep("pitch_bandwidth", 5),
+            rep("pitch_f0_ran", 5), # only one value
+            rep("intensity_mean", 5),
+            rep("intensity_variability", 5),
+            rep("intensity_variability_entropy", 5))
+
+translation_mat <- cbind(original_columns, feature)
+names(translation_mat)[1] <- "column"
+
+sz_join <- left_join(sz_long, translation_mat, by = "column")
+
+sz_join$column <- NULL
+
+sz_clean <- sz_join %>% group_by(feature) %>%
+  spread(measure, cell)
+
+#make numeric 
+sz_clean$x_1 <- as.numeric(sz_clean$x_1)
+sz_clean$x_2 <- as.numeric(sz_clean$x_2)
+sz_clean$SD_1 <- as.numeric(sz_clean$SD_1)
+sz_clean$SD_2 <- as.numeric(sz_clean$SD_2)
+
+# Rearranging and renaming columns
+sz_col <- sz_clean %>% 
+  select(
+    study_ID,
+    short_cite = Article,
+    long_cite,
+    title = Title,
+    authors = Authors,
+    publication_year = Year_publication,
+    doi,
+    peer_reviewed,
+    coder,
+    expt_unique,
+    expt_condition = Specification,
+    same_sample,
+    task_type = TYPE_OF_TASK,
+    participant_design,
+    native_language,
+    group_name_1,
+    group_name_2,
+    n_1 = SAMPLE_SIZE_SZ,
+    n_2 = SAMPLE_SIZE_HC,
+    n_1_M = MALE_SZ,
+    n_2_M = MALE_HC,
+    n_1_F = FEMALE_SZ,
+    n_2_F = FEMALE_HC,
+    mean_age_1 = AGE_M_SZ,
+    mean_age_2 = AGE_M_HC,
+    sd_age_1 = AGE_SD_SZ,
+    sd_age_2 = AGE_SD_HC,
+    mean_education_1 = EDUCATION_M_SZ,
+    mean_education_2 = EDUCATION_M_HC,
+    sd_education_1 = EDUCATION_SD_SZ,
+    sd_education_2 = EDUCATION_SD_HC,
+    mean_total_task_duration_1 = TASK_TOTAL_DURATION_SZ_M,
+    mean_total_task_duration_2 = TASK_TOTAL_DURATION_HC_M,
+    sd_total_task_duration_1 = TASK_TOTAL_DURATION_SZ_SD,
+    sd_total_task_duration_2 = TASK_TOTAL_DURATION_HC_SD,
+    feature,
+    unit,
+    x_1,
+    x_2,
+    SD_1,
+    SD_2
+  )
+
+# remove if all the four values are NA's
+sz_final <- sz_col[!with(sz_col, is.na(x_1) & is.na(x_2) & is.na(SD_1) & is.na(SD_2)),]
+
+# write df
+sz_final <- write_csv(sz_final, "preprodata/sz_final.csv")
+```
+

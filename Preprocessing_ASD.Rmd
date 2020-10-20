@@ -1,0 +1,354 @@
+---
+title: "Preprocessing_ASD"
+author: Nicole
+output: html_document
+---
+
+
+```{r}
+#install packages
+library(pacman, tidyverse)
+p_load('metafor','robumeta','ggplot2','boot')
+```
+
+
+```{r}
+#load dataframe
+ASD <- read.delim("rawdata/ASD_MetaAnalysisData.tsv")
+
+#remove empty rows
+ASD <- ASD[-c(42:47), ]
+
+#remove D from Hubbard and mistake in Scharfstein
+ASD[6,2] <- "Scharfstein"
+ASD[40,2] <- "Hubbard"
+
+#study_ID column
+ASD$study_ID <- paste0(ASD$Author, ASD$Year)
+
+#short_cite column
+ASD$short_cite <- NA
+ASD$short_cite <- gsub("[()]", "", as.character(ASD$Paper))
+ASD$short_cite <- gsub("\\d{4}", "", as.character(ASD$short_cite))
+ASD$short_cite <- gsub(", $", "", as.character(ASD$short_cite))
+ASD$short_cite <- gsub("et al ", "et al.", as.character(ASD$short_cite))
+ASD$short_cite <- gsub(" $", "", as.character(ASD$short_cite))
+ASD$short_cite <- paste0(ASD$short_cite, " (", ASD$Year, ")")
+
+#long_cite column
+ASD$long_cite <- c(
+"Sharda, M., Subhadra, T.P., Sahay, S., Nagaraja, C., Singh, L., Mishra, R., ... Singh, N.C. (2010). Sounds of melody–pitch patterns of speech in autism. Neuroscience Letters, 478, 42–45.",
+
+"Filipe, M.G., Frota, S., Castro, S.L., & Vicente, S.G. (2014). Atypical prosody in Asperger syndrome: Perceptual and acoustic measurements. Journal of Autism and Develop- mental Disorders, 44, 1972–1981.",
+
+"Filipe, M.G., Frota, S., Castro, S.L., & Vicente, S.G. (2014). Atypical prosody in Asperger syndrome: Perceptual and acoustic measurements. Journal of Autism and Develop- mental Disorders, 44, 1972–1981.",
+
+"Diehl, J.J., Watson, D.G., Bennetto, L., McDonough, J., & Gunlogson, C. (2009). An acoustic analysis of prosody in high-functioning autism. Applied Psycholinguistics, 30, 385–404.",
+
+"Diehl, J.J., Watson, D.G., Bennetto, L., McDonough, J., & Gunlogson, C. (2009). An acoustic analysis of prosody in high-functioning autism. Applied Psycholinguistics, 30, 385–404.",
+
+"Scharfstein, L.A., Beidel, D.C., Sims, V.K., & Finnell, L.R. (2011). Social skills deficits and vocal characteristics of children with social phobia or Asperger’s disorder: A comparative study. Journal of Abnormal Child psychology, 39, 865–875.",
+
+"Hubbard, K., & Trauner, D.A. (2007). Intonation and emotion in autistic spectrum disorders. Journal of Psycholinguistic Research, 36, 159–173.",
+
+"Hubbard, K., & Trauner, D.A. (2007). Intonation and emotion in autistic spectrum disorders. Journal of Psycholinguistic Research, 36, 159–173.",
+
+"Nakai, Y., Takashima, R., Takiguchi, T., & Takada, S. (2014). Speech intonation in children with autism spectrum disorder. Brain and Development, 36, 516–522.",
+
+"Nakai, Y., Takashima, R., Takiguchi, T., & Takada, S. (2014). Speech intonation in children with autism spectrum disorder. Brain and Development, 36, 516–522.",
+
+"Kaland, C., Krahmer, E., & Swerts, M. (2012). Contrastive into- nation in autism: The effect of speaker-and listener-perspective. In Proceedings of Interspeech 2012. Portland, Oregon.",
+
+"Grossman, R.B., Bemis, R.H., Skwerer, D.P., & Tager-Flusberg, H. (2010). Lexical and affective prosody in children with high-functioning autism. Journal of Speech, Language, and Hearing Research, 53, 778–793.",
+
+"Bonneh, Y.S., Levanon, Y., Dean-Pardo, O., Lossos, L., & Adini, Y. (2011). Abnormal speech spectrum and increased pitch variability in young autistic children. Frontiers in Human Neuroscience, 4, 237.",
+
+"Green, H., & Tobin, Y. (2009). Prosodic analysis is difficult... but worth it: A study in high functioning autism. Interna- tional Journal of Speech-Language Pathology, 11, 308–315.",
+
+"Nadig, A., & Shaw, H. (2012). Acoustic and perceptual measurement of expressive prosody in high-functioning autism: Increased pitch range and what it means to listeners. Journal of Autism and Development Disorders, 42, 499–511.",
+
+"Nadig, A., & Shaw, H. (2012). Acoustic and perceptual measurement of expressive prosody in high-functioning autism: Increased pitch range and what it means to listeners. Journal of Autism and Development Disorders, 42, 499–511.",
+
+"Depape, A.M., Chen, A., Hall, G.B., & Trainor, L.J. (2012). Use of prosody and information structure in high functioning adults with autism in relation to language ability. Frontiers in Psychology, 3, 72.",
+
+"Fosnot, S.M., & Jun, S. (1999). Prosodic characteristics in children with stuttering or autism during reading and imitation. In J.J. Ohala & Y. Hasegawa (Eds.), Proceedings of the 14th International Congress of Phonetic Sciences (pp. 1925–1928). Dordrecht: Foris.",
+
+"Diehl, J.J., & Paul, R. (2012). Acoustic differences in the imitation of prosodic patterns in children with autism spectrum disorders. Research on Autism Spectrum Disorder, 6, 123– 134.",
+
+"Diehl, J.J., & Paul, R. (2013). Acoustic and perceptual measurements of prosody production on the profiling elements of prosodic systems in children by children with autism spectrum disorders. Applied Psycholinguistics, 34, 135–161.",
+
+"Brisson, J., Martel, K., Serres, J., Sirois, S., & Adrien, J.L. (2014). Acoustic analysis of oral productions of infants later diagnosed with autism and their mother. Infant Mental Health Journal, 35, 285–295.",
+
+"Oller, D.K., Niyogi, P., Gray, S., Richards, J.A., Gilkerson, J., Xu, D., . . . Warren, S.F. (2010). Automated vocal analysis of naturalistic recordings from children with autism, language delay, and typical development. Proceedings of National Academy of Sciences of the United States of America, 107, 13354–13359.",
+
+"Paul, R., Bianchi, N., Augustyn, A., Klin, A., & Volkmar, F.R. (2008). Production of syllable stress in speakers with autism spectrum disorders. Research in Autism Spectrum Disorders, 2, 110–124.",
+
+"Feldstein, S., Konstantareas, M., Oxman, J., & Webster, C.D. (1982). The chronography of interactions with autistic speakers: An initial report. Journal of Communication Disorders, 15, 451–460.",
+
+"Thurber, C., & Tager-Flusberg, H. (1993). Pauses in the narratives produced by autistic, mentally retarded, and normal children as an index of cognitive demand. Journal of Autism and Developmental Disorders, 23, 309–322.",
+
+"Chan, K.K., & To, C.K. (2016). Do individuals with high-functioning autism who speak a tone language show intonation deficits? Journal of Autism and Developmental Disorders, 46, 1784–1792.",
+
+"Morett, L.M., O’hearn, K., Luna, B., & Ghuman, A.S. (2016). Altered gesture and speech production in ASD detract from in-person communicative quality. Journal of Autism and Developmental disorders, 46, 998–1012.",
+
+"Parish-Morris, J., Liberman, M., Ryant, N., Cieri, C., Bateman, L., Ferguson, E., & Schultz, R.T. (2016). Exploring Autism Spectrum Disorders Using HLT. In Proceedings of 2016 Conference of the North American Chapter of the Associa- tion for Computational Linguistics — Human Language Technologies. Stroudsburg (PA): Association for Computa- tional Linguistics.",
+
+"Quigley, J., McNally, S., & Lawson, S. (2016). Prosodic patterns in interaction of low-risk and at-risk-of-autism spectrum disorders infants and their mothers at 12 and 18 months. Language Learning and Development, 12, 295–310.",
+
+"Quigley, J., McNally, S., & Lawson, S. (2016). Prosodic patterns in interaction of low-risk and at-risk-of-autism spectrum disorders infants and their mothers at 12 and 18 months. Language Learning and Development, 12, 295–310.",
+
+"Dahlgren, S., Sandberg, A. D., Strömbergsson, S., Wenhov, L., Råstam, M., & Nettelbladt, U. (2018). Prosodic traits in speech produced by children with autism spectrum disorders–Perceptual and acoustic measurements. Autism & Developmental Language Impairments, 3, 2396941518764527.",
+
+"Fusaroli, R., Lambrechts, A., Yarrow, K., Maras, K., & Gaigg, S. (2016). Conversational voice patterns in adult English speakers with ASD. Paper presented at the IMFAR 2016, Baltimore, United States.",
+
+"Fusaroli, R., Lambrechts, A., Yarrow, K., Maras, K., & Gaigg, S. (2016). Conversational voice patterns in adult English speakers with ASD. Paper presented at the IMFAR 2016, Baltimore, United States.",
+
+"Fusaroli, R., Bang, D., & Weed, E. (2013). Non-Linear Analyses of Speech and Prosody in Asperger’s Syndrome. Paper presented at the IMFAR 2013, San Sebastian.",
+
+"Fusaroli, R., Bang, D., & Weed, E. (2013). Non-Linear Analyses of Speech and Prosody in Asperger’s Syndrome. Paper presented at the IMFAR 2013, San Sebastian.",
+
+"Fusaroli, R., Bang, D., & Weed, E. (2013). Non-Linear Analyses of Speech and Prosody in Asperger’s Syndrome. Paper presented at the IMFAR 2013, San Sebastian.",
+
+"Fusaroli, R., Grossman, R.B., Cantio, C., Bilenberg, N., & Weed, E. (2015). The temporal structure of the autistic voice: A cross-linguistic examination. Paper presented at the IMFAR 2015, Salt Lake City, United States.",
+
+"Fusaroli, R., Grossman, R.B., Cantio, C., Bilenberg, N., & Weed, E. (2015). The temporal structure of the autistic voice: A cross-linguistic examination. Paper presented at the IMFAR 2015, Salt Lake City, United States.",
+
+"Fusaroli, R., Grossman, R.B., Cantio, C., Bilenberg, N., & Weed, E. (2015). The temporal structure of the autistic voice: A cross-linguistic examination. Paper presented at the IMFAR 2015, Salt Lake City, United States.",
+
+"Hubbard, D. J., Faso, D. J., Assmann, P. F., & Sasson, N. J. (2017). Production and perception of emotional prosody by adults with autism spectrum disorder. Autism Research, 10(12), 1991-2001.",
+
+"Seidl, A., Cristia, A., Soderstrom, M., Ko, E. S., Abel, E. A., Kellerman, A., & Schwichtenberg, A. J. (2018). Infant–mother acoustic–prosodic alignment and developmental risk. Journal of Speech, Language, and Hearing Research, 61(6), 1369-1380.")
+
+#doi column
+ASD$doi <- c(
+  "https://doi.org/10.1016/j.neulet.2010.04.066",
+  "https://doi.org/10.1007/s10803-014-2073-2",
+  "https://doi.org/10.1007/s10803-014-2073-2",
+  "https://doi.org/10.1017/S0142716409090201",
+  "https://doi.org/10.1017/S0142716409090201",
+  "https://doi.org/10.1007/s10802-011-9498-2",
+  "https://doi.org/10.1007/s10936-006-9037-4",
+  "https://doi.org/10.1007/s10936-006-9037-4",
+  "https://doi.org/10.1016/j.braindev.2013.07.006",
+  "https://doi.org/10.1016/j.braindev.2013.07.006",
+  NA,
+  "https://doi.org/10.1044/1092-4388(2009/08-0127)",
+  "https://doi.org/10.3389/fnhum.2010.00237",
+  "https://doi.org/10.1080/17549500903003060",
+  "https://doi.org/10.1007/s10803-011-1264-3",
+  "https://doi.org/10.1007/s10803-011-1264-3",
+  "https://doi.org/10.3389/fpsyg.2012.00072",
+  NA,
+  "https://doi.org/10.1016/j.rasd.2011.03.012",
+  "https://doi.org/10.1017/S0142716411000646",
+  "https://doi.org/10.1002/imhj.21442",
+  "https://doi.org/10.1073/pnas.1003882107",
+  "https://doi.org/10.1016/j.rasd.2007.04.001",
+  "https://doi.org/10.1016/0021-9924(82)90018-1",
+  "https://doi.org/10.1007/BF01046222",
+  "https://doi.org/10.1007/s10803-016-2709-5",
+  "https://doi.org/10.1007/s10803-015-2645-9",
+  NA,
+  "https://doi.org/10.1080/15475441.2015.1075405",
+  "https://doi.org/10.1080/15475441.2015.1075405",
+  "https://doi.org/10.1177/2396941518764527",
+  NA,
+  NA,
+  NA,
+  NA,
+  NA,
+  NA,
+  NA,
+  NA,
+  "https://doi.org/10.1002/aur.1847",
+  "https://doi.org/10.1044/2018_JSLHR-S-17-0287")
+  
+#peer_reviewed column
+ASD$peer_reviewed	<- c(
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  NA,
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  NA,
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  "yes",
+  NA,
+  "yes",
+  "yes",
+  "yes",
+  NA,
+  NA,
+  NA,
+  NA,
+  NA,
+  NA,
+  NA,
+  NA,
+  "yes",
+  "yes")
+
+#coder column
+ASD$coder <- "LNJ, ND"
+
+#expt_unique: unique experiment code from short_cite
+ASD$expt_unique <- make.unique(ASD$short_cite) 
+#%>% str_extract ("\\d$")
+
+#make constrained production to constrained
+ASD$Task[ASD$Task == "Constrained Production"] <- "Constrained"
+#make social interaction to social_interaction
+ASD$Task[ASD$Task == "Social Interaction"] <- "social_interaction"
+#make non-capital letters
+ASD$Task <- tolower(ASD$Task)
+ASD$Task2 <- tolower(ASD$Task2)
+
+#participant design column
+ASD$participant_design <- "between"
+
+#group name columns
+ASD$group_name_1 <- "ASD"
+ASD$group_name_2 <- "HC"
+
+#n_F columns
+ASD$n_1_F	<- ASD$ASD_N - ASD$GenderMaleASD
+ASD$n_2_F	<- ASD$TD_N - ASD$GenderMaleTD
+
+#make long format
+ASD_long <- ASD %>% 
+  gather(column, cell, 19:75, factor_key = TRUE) 
+
+#make measure translation
+ASD_long$measure <- ifelse(grepl("ASD_Mean$", ASD_long$column), "x_1",
+                    ifelse(grepl("rASD$", ASD_long$column), "x_1",
+                    ifelse(grepl("TD_Mean$", ASD_long$column), "x_2",
+                    ifelse(grepl("rTD$", ASD_long$column), "x_2",
+                     ifelse(grepl("ASD_SD$", ASD_long$column), "SD_1",
+                      ifelse(grepl("TD_SD$", ASD_long$column), "SD_2",
+                        ifelse(grepl("nit", ASD_long$column), "unit", 
+                          ifelse(grepl("ASDvsTD", ASD_long$column), "ASDvsTD", "other"))))))))
+
+#test if any measures were not identified
+test1 <- filter(ASD_long, measure == "other")
+
+#create translation matrix
+original_columns <- as.data.frame(unique(ASD_long$column))
+
+original_columns$old_feature <- str_remove(original_columns$`unique(ASD_long$column)`, "ASD_Mean|ASD_SD|TD_Mean|TD_SD|ASDvsTD|_Units|Unit|ASD|TD")
+
+original_columns$feature[original_columns$old_feature == "PitchMean"] <- "pitch_f0"
+original_columns$feature[original_columns$old_feature == "PitchRange"] <- "pitch_f0_range"
+original_columns$feature[original_columns$old_feature == "PitchSD"] <- "pitch_f0_sd"
+original_columns$feature[original_columns$old_feature == "PitchVariability"] <- "pitch_f0_variability"
+original_columns$feature[original_columns$old_feature == "IntensityMean"] <- "intensity_mean"
+original_columns$feature[original_columns$old_feature == "UtteranceDuration"] <- "utterance_duration"
+original_columns$feature[original_columns$old_feature == "SyllableDuration"] <- "syllable_duration"
+original_columns$feature[original_columns$old_feature == "SpeechRate"] <- "speech_rate"
+original_columns$feature[original_columns$old_feature == "PauseLength"] <- "pause_length" #check if average or total
+original_columns$feature[original_columns$old_feature == "PauseNumber"] <- "pause_number"
+
+translation_mat <- select(original_columns, -c("old_feature"))
+names(translation_mat)[1] <- "column"
+
+#apply translation matrix
+ASD_join <- left_join(ASD_long, translation_mat, by = "column")
+ASD_join$column <- NULL
+
+#make wide format
+ASD_clean <- ASD_join %>% group_by(feature) %>%
+  spread(measure, cell)
+
+#translation_mat[1,]
+#test <- ASD_join[c(124,206),]
+#View(test)
+
+#make numeric 
+ASD_clean$x_1 <- as.numeric(ASD_clean$x_1)
+ASD_clean$x_2 <- as.numeric(ASD_clean$x_2)
+ASD_clean$SD_1 <- as.numeric(ASD_clean$SD_1)
+ASD_clean$SD_2 <- as.numeric(ASD_clean$SD_2)
+
+#add feature specification
+ASD_clean$feature_spec <- ifelse(ASD_clean$feature == "utterance_duration", "utterance_duration",
+                                 ifelse(ASD_clean$feature == "syllable_duration", "syllable_duration", NA))
+
+ASD_clean$feature[ASD_clean$feature == "utterance_duration" | ASD_clean$feature == "syllable_duration"] <- "speech_duration"
+
+#select final columns and reorder them
+ASD_col <- ASD_clean %>% 
+  select(
+    study_ID,
+    short_cite,
+    long_cite,
+    author = Author,
+    publication_year = Year,
+    doi,
+    peer_reviewed,
+    coder,
+    expt_unique,
+    same_sample = Population,
+    task_type = Task,
+    task_type_specification = Task2,
+    participant_design,
+    native_language = Language,
+    native_language_specification = Language2,
+    group_name_1,
+    diagnosis_specification = DiagnosisDetails,
+    group_name_2,
+    n_1 = ASD_N,
+    n_2 = TD_N,
+    n_1_M = GenderMaleASD,	
+    n_2_M	= GenderMaleTD,
+    n_1_F,	
+    n_2_F,	
+    mean_age_1 = AgeASD_Mean,
+    mean_age_2 = AgeTD_Mean,
+    sd_age_1 = AgeASD_SD,
+    sd_age_2 = AgeTD_SD,
+    feature,
+    feature_specification = feature_spec,
+    unit,
+    x_1,
+    x_2,
+    SD_1,
+    SD_2
+  )
+
+#remove rows where all four values are NA's
+ASD_final <- ASD_col[!with(ASD_col, is.na(x_1) & is.na(x_2) & is.na(SD_1) & is.na(SD_2)),]
+
+#save file
+write.csv(ASD_final, "preprodata/ASD_final.csv")
+
+#look if pause_length is average or total
+pause_ASD <- ASD_final %>% filter(feature == "pause_length") 
+mean(pause_ASD$x_1, na.rm = TRUE)
+mean(pause_ASD$x_2, na.rm = TRUE)
+
+pause_SZ <- sz_final %>% filter(feature == "pause_total_length")
+mean(pause_SZ$x_1, na.rm = TRUE)
+mean(pause_SZ$x_2, na.rm = TRUE)
+
+pause_dur_SZ <- sz_final %>% filter(feature == "pause_duration")
+mean(pause_dur_SZ$x_1, na.rm = TRUE)
+mean(pause_dur_SZ$x_2, na.rm = TRUE)
+```
