@@ -12,11 +12,9 @@ pacman::p_load(tidyverse,metafor,lmerTest,readxl)
 
 
 ```{r}
-#load dataframe (for louise)
-d <- as.data.frame(read_excel("C:/Users/louis/OneDrive - Aarhus universitet/AU Onedrive - RIGTIG/- 5. Semester/LNJ-ND/MetaLabPreprocess/Data/Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx"))
-
-#load dataframe (for nicole)
+#load dataframe
 d <- as.data.frame(read_excel("rawdata/Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx"))
+sz_final <- read_csv("preprodata/sz_final.csv")
 
 #only want SZ
 sz <- d %>% subset(DIAGNOSIS == "SZ")
@@ -214,7 +212,7 @@ feature <- c(rep("speech_duration", 5), #speech duration speech_duration
             rep("pitch_f1_variability", 5),
             rep("pitch_f2_variability", 5),
             rep("pitch_bandwidth", 5),
-            rep("pitch_f0_ran", 5), # only one value
+            rep("pitch_f0_range", 5), # only one value
             rep("intensity_mean", 5),
             rep("intensity_variability", 5),
             rep("intensity_variability_entropy", 5))
@@ -286,5 +284,10 @@ sz_final <- sz_col[!with(sz_col, is.na(x_1) & is.na(x_2) & is.na(SD_1) & is.na(S
 
 # write df
 sz_final <- write_csv(sz_final, "preprodata/sz_final.csv")
+
+# checking which features have no NAs in these columns
+sz_feature <- sz_final[!is.na(sz_final$x_1) & !is.na(sz_final$x_2) & !is.na(sz_final$SD_1) & !is.na(sz_final$SD_2),]
+
+unique(sz_feature$feature)
 ```
 
