@@ -219,7 +219,7 @@ LHD_col <- RHD %>%
     task_type_spec,
     participant_design,
     native_language = Language,
-    group_name_1_LHD,
+    group_name_1 = group_name_1_LHD,
     group_name_2,
     n_1 = LHD_N,
     n_2 = NBD_N,
