@@ -12,11 +12,10 @@ pacman::p_load(tidyverse,metafor,lmerTest,readxl)
 
 loading
 ```{r}
-# Loading RHD data #for louise
-#RHD <- read_tsv("Data/data_RHD_meta-analysis.csv")
-
 #for nicole
 RHD <- read_tsv("rawdata/data_RHD_meta-analysis.csv")
+RHD_final <- read_csv("preprodata/RHD_final.csv")
+LHD_final <- read_csv("preprodata/LHD_final.csv")
 ```
 
 study_ID, short_cite
@@ -391,7 +390,14 @@ LHD_final <- write_csv(LHD_final, "preprodata/LHD_final.csv")
 
 
 ```{r}
-# Remember: make sure that same_sample corresponds to same_infant
+# checking which features have no NAs in these columns
+RHD_feature <- RHD_final[!is.na(RHD_final$x_1) & !is.na(RHD_final$x_2) & !is.na(RHD_final$SD_1) & !is.na(RHD_final$SD_2),]
+
+unique(RHD_feature$feature)
+
+LHD_feature <- LHD_final[!is.na(LHD_final$x_1) & !is.na(LHD_final$x_2) & !is.na(LHD_final$SD_1) & !is.na(LHD_final$SD_2),]
+
+unique(LHD_feature$feature)
 ```
 
 

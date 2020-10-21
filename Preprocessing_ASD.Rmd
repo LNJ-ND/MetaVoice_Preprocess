@@ -11,6 +11,10 @@ library(pacman, tidyverse)
 p_load('metafor','robumeta','ggplot2','boot', 'tidyverse')
 ```
 
+```{r}
+ASD_final <- read_csv("preprodata/ASD_final.csv")
+```
+
 
 ```{r}
 #load dataframe
@@ -338,7 +342,17 @@ ASD_final <- ASD_col[!with(ASD_col, is.na(x_1) & is.na(x_2) & is.na(SD_1) & is.n
 
 #save file
 write.csv(ASD_final, "preprodata/ASD_final.csv")
+```
 
+```{r}
+# checking which features have no NAs in these columns
+ASD_feature <- ASD_final[!is.na(ASD_final$x_1) & !is.na(ASD_final$x_2) & !is.na(ASD_final$SD_1) & !is.na(ASD_final$SD_2),]
+
+unique(ASD_feature$feature)
+```
+
+
+```{r}
 #look if pause_length is average or total
 # pause_ASD <- ASD_final %>% filter(feature == "pause_length") 
 # mean(pause_ASD$x_1, na.rm = TRUE)
