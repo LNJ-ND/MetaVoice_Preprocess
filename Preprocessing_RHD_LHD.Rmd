@@ -14,8 +14,8 @@ loading
 ```{r}
 #for nicole
 RHD <- read_tsv("rawdata/data_RHD_meta-analysis.csv")
-RHD_final <- read_csv("preprodata/RHD_final.csv")
-LHD_final <- read_csv("preprodata/LHD_final.csv")
+# RHD_final <- read_csv("preprodata/RHD_final.csv")
+# LHD_final <- read_csv("preprodata/LHD_final.csv")
 ```
 
 study_ID, short_cite
@@ -46,6 +46,11 @@ RHD$long_cite <- ifelse(RHD$study_ID == "Emmorey1987", RHD$long_cite <- "Emmorey
                                                                                                                    ifelse(RHD$study_ID == "Yang2016", RHD$long_cite <- "Yang, S. Y., & Van Lancker Sidtis, D. (2016). Production of Korean Idiomatic Utterances Following Left- and Right-Hemisphere Damage: Acoustic Studies. J Speech Lang Hear Res, 59(2), 267-280.",
                                                                                                                           ifelse(RHD$study_ID == "Wright2018", RHD$long_cite <- "Wright, A., Saxena, S., Sheppard, S. M., & Hillis, A. E. (2018). Selective impairments in components of affective prosody in neurologically impaired individuals. Brain and Cognition, 124, 29-36.",
                                                                                                                                  ifelse(RHD$study_ID == "Pell1999b", RHD$long_cite <- "Pell, M. D. (1999b). The temporal organization of affective and non-affective speech in patients with right-hemisphere infarcts. Cortex.", NA))))))))))))))))
+```
+
+correcting year
+```{r}
+RHD$Year[RHD$study_ID == "Ouellette1994"] <- 1994
 ```
 
 doi
@@ -150,11 +155,11 @@ RHD$group_name_1_LHD <- "LHD"
 feature
 ```{r}
 # feature (F0-variation, Fo-other, Pause-duration, Speech-duration, Intensity, Intensity-variation)
-RHD$feature <- ifelse(RHD$Feature == "F0-variation", RHD$feature <- "pitch_f0_variability",
-                        ifelse(RHD$Feature == "Fo-other", RHD$feature <- "pitch_f0",
+RHD$feature <- ifelse(RHD$Feature == "F0-variation", RHD$feature <- "pitch_variability",
+                        ifelse(RHD$Feature == "Fo-other", RHD$feature <- "pitch",
                                ifelse(RHD$Feature == "Pause-duration", RHD$feature <- "pause_duration",
                                       ifelse(RHD$Feature == "Speech-duration", RHD$feature <- "speech_duration",
-                                             ifelse(RHD$Feature == "Intensity", RHD$feature <- "intensity_mean",
+                                             ifelse(RHD$Feature == "Intensity", RHD$feature <- "intensity",
                                                     ifelse(RHD$Feature == "Intensity-variation", RHD$feature <- "intensity_variability", NA))))))
 ```
 
