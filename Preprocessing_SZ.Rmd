@@ -200,20 +200,20 @@ feature <- c(rep("speech_duration", 5), #speech duration speech_duration
             rep("pause_total_length", 5),
             rep("response_latency", 5),
             rep("pause_variability", 5), # only two values
-            rep("pitch_f0", 5),
-            rep("pitch_f1", 5),
-            rep("pitch_f2", 5),
-            rep("pitch_f3", 5),
-            rep("pitch_f4", 5),
-            rep("pitch_f5", 5),
-            rep("pitch_f6", 5),
-            rep("pitch_f0_variability", 5),
-            rep("pitch_f0_entropy", 5),
-            rep("pitch_f1_variability", 5),
-            rep("pitch_f2_variability", 5),
+            rep("pitch", 5),
+            rep("f1", 5),
+            rep("f2", 5),
+            rep("f3", 5),
+            rep("f4", 5),
+            rep("f5", 5),
+            rep("f6", 5),
+            rep("pitch_variability", 5),
+            rep("pitch_entropy", 5),
+            rep("f1_variability", 5),
+            rep("f2_variability", 5),
             rep("pitch_bandwidth", 5),
-            rep("pitch_f0_range", 5), # only one value
-            rep("intensity_mean", 5),
+            rep("pitch_range", 5), # only one value
+            rep("intensity", 5),
             rep("intensity_variability", 5),
             rep("intensity_variability_entropy", 5))
 

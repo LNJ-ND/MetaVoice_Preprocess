@@ -12,7 +12,7 @@ p_load('metafor','robumeta','ggplot2','boot', 'tidyverse')
 ```
 
 ```{r}
-ASD_final <- read_csv("preprodata/ASD_final.csv")
+# ASD_final <- read_csv("preprodata/ASD_final.csv")
 ```
 
 
@@ -259,11 +259,11 @@ original_columns <- as.data.frame(unique(ASD_long$column))
 
 original_columns$old_feature <- str_remove(original_columns$`unique(ASD_long$column)`, "ASD_Mean|ASD_SD|TD_Mean|TD_SD|ASDvsTD|_Units|Unit|ASD|TD")
 
-original_columns$feature[original_columns$old_feature == "PitchMean"] <- "pitch_f0"
-original_columns$feature[original_columns$old_feature == "PitchRange"] <- "pitch_f0_range"
-original_columns$feature[original_columns$old_feature == "PitchSD"] <- "pitch_f0_sd"
-original_columns$feature[original_columns$old_feature == "PitchVariability"] <- "pitch_f0_variability"
-original_columns$feature[original_columns$old_feature == "IntensityMean"] <- "intensity_mean"
+original_columns$feature[original_columns$old_feature == "PitchMean"] <- "pitch"
+original_columns$feature[original_columns$old_feature == "PitchRange"] <- "pitch_range"
+original_columns$feature[original_columns$old_feature == "PitchSD"] <- "pitch_sd"
+original_columns$feature[original_columns$old_feature == "PitchVariability"] <- "pitch_variability"
+original_columns$feature[original_columns$old_feature == "IntensityMean"] <- "intensity"
 original_columns$feature[original_columns$old_feature == "UtteranceDuration"] <- "utterance_duration"
 original_columns$feature[original_columns$old_feature == "SyllableDuration"] <- "syllable_duration"
 original_columns$feature[original_columns$old_feature == "SpeechRate"] <- "speech_rate"
