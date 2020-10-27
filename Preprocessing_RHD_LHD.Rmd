@@ -10,12 +10,18 @@ knitr::opts_chunk$set(echo = TRUE)
 pacman::p_load(tidyverse,metafor,lmerTest,readxl)
 ```
 
-loading
+Reading data
 ```{r}
-#for nicole
-RHD <- read_tsv("rawdata/data_RHD_meta-analysis.csv")
+# OSF data
+RHD <- read_csv("rawdata/data-table_RHD_osf.csv")
+
 # RHD_final <- read_csv("preprodata/RHD_final.csv")
 # LHD_final <- read_csv("preprodata/LHD_final.csv")
+```
+
+correcting year
+```{r}
+RHD$Year[RHD$study_ID == "Ouellette1994"] <- 1994
 ```
 
 study_ID, short_cite
@@ -46,11 +52,6 @@ RHD$long_cite <- ifelse(RHD$study_ID == "Emmorey1987", RHD$long_cite <- "Emmorey
                                                                                                                    ifelse(RHD$study_ID == "Yang2016", RHD$long_cite <- "Yang, S. Y., & Van Lancker Sidtis, D. (2016). Production of Korean Idiomatic Utterances Following Left- and Right-Hemisphere Damage: Acoustic Studies. J Speech Lang Hear Res, 59(2), 267-280.",
                                                                                                                           ifelse(RHD$study_ID == "Wright2018", RHD$long_cite <- "Wright, A., Saxena, S., Sheppard, S. M., & Hillis, A. E. (2018). Selective impairments in components of affective prosody in neurologically impaired individuals. Brain and Cognition, 124, 29-36.",
                                                                                                                                  ifelse(RHD$study_ID == "Pell1999b", RHD$long_cite <- "Pell, M. D. (1999b). The temporal organization of affective and non-affective speech in patients with right-hemisphere infarcts. Cortex.", NA))))))))))))))))
-```
-
-correcting year
-```{r}
-RHD$Year[RHD$study_ID == "Ouellette1994"] <- 1994
 ```
 
 doi
@@ -126,7 +127,7 @@ RHD$same_sample <- ifelse(RHD$study_ID == "Emmorey1987", RHD$same_sample <- "A",
                                                                                                             ifelse(RHD$study_ID == "Guranski2015", RHD$same_sample <- "L",
                                                                                                                    ifelse(RHD$study_ID == "Yang2016", RHD$same_sample <- "M",
                                                                                                                           ifelse(RHD$study_ID == "Wright2018", RHD$same_sample <- "N",
-                                                                                                                                 ifelse(RHD$study_ID == "Pell1999b", RHD$same_sample <- "O", NA)))))))))))))))
+                                                                                                                                 ifelse(RHD$study_ID == "Pell1999b", RHD$same_sample <- "G", NA)))))))))))))))
 
 ```
 
@@ -136,12 +137,12 @@ task_type, task_type_spec, participant_design
 RHD$task_type <- str_extract(RHD$Task, "[Cc]onstrained") #[Cc]onstrained" if also including free and constrained
 RHD$task_type <- ifelse(RHD$task_type == "Constrained", "constrained", NA)
 RHD$task_type[is.na(RHD$task_type)] <- "free"
-RHD$task_type[31:33] <- "constrained" # adding constrained to the constrained experiments within this study (the first one is free, and these three are constrained)
+RHD$task_type[81:83] <- "constrained" # adding constrained to the constrained experiments within this study (the first one is free, and these three are constrained)
 
 # task_type_spec
 RHD$task_type_spec <- str_extract(RHD$Task, "(?<=\\().+?(?=\\))")
-RHD$task_type_spec[30] <- "spontaneous"
-RHD$task_type_spec[31:33] <- "repetition"
+RHD$task_type_spec[c(79:80, 84)] <- "spontaneous"
+RHD$task_type_spec[81:83] <- "repetition"
 
 # participant_design
 RHD$participant_design <- "between"
@@ -154,13 +155,19 @@ RHD$group_name_1_LHD <- "LHD"
 
 feature
 ```{r}
-# feature (F0-variation, Fo-other, Pause-duration, Speech-duration, Intensity, Intensity-variation)
-RHD$feature <- ifelse(RHD$Feature == "F0-variation", RHD$feature <- "pitch_variability",
-                        ifelse(RHD$Feature == "Fo-other", RHD$feature <- "pitch",
-                               ifelse(RHD$Feature == "Pause-duration", RHD$feature <- "pause_duration",
-                                      ifelse(RHD$Feature == "Speech-duration", RHD$feature <- "speech_duration",
-                                             ifelse(RHD$Feature == "Intensity", RHD$feature <- "intensity",
-                                                    ifelse(RHD$Feature == "Intensity-variation", RHD$feature <- "intensity_variability", NA))))))
+# feature
+RHD$feature <- ifelse(RHD$Feature == "F0-variation", "pitch_variability",
+                        ifelse(RHD$Feature == "F0-mean", "pitch",
+                               ifelse(RHD$Feature == "Pause-duration", "pause_duration",
+                                      ifelse(RHD$Feature == "Speech-duration", "speech_duration",
+                                             ifelse(RHD$Feature == "Intensity-mean", "intensity",
+                                                    ifelse(RHD$Feature == "Intensity-variation", "intensity_variability",
+                                                           ifelse(RHD$Feature == "F0-contour", "F0_contour",
+                                                                  ifelse(RHD$Feature == "Speech-duration-ratio", "speech_duration_ratio",
+                                                                         ifelse(RHD$Feature == "Speech-duration-utt", "speech_duration",
+                                                                                ifelse(RHD$Feature == "Speech-duration-perc", "speech_percentage",
+                                                                                       ifelse(RHD$Feature == "Speech-duration-var", "speech_duration_variability",
+                                                                    NA)))))))))))
 ```
 
 prosody_type
@@ -219,7 +226,7 @@ LHD_col <- RHD %>%
     task_type_spec,
     participant_design,
     native_language = Language,
-    group_name_1_LHD,
+    group_name_1 = group_name_1_LHD,
     group_name_2,
     n_1 = LHD_N,
     n_2 = NBD_N,
@@ -240,157 +247,122 @@ LHD_final <- LHD_col[!with(LHD_col, is.na(x_1) & is.na(x_2) & is.na(SD_1) & is.n
 
 
 ```{r}
-# make SDs for SD = 0 
-# I would do data inputation: take the studies that have meaningful sd's, create a model predicting sd from #mean, sample size and potentially other relevant factors, check how good the predictions are and if so, #apply the model to the data from the studies without meaningful sd's.
+# make SDs for SD = 0 to make the computation of effect size possible
 
-# turn negative into absolute values
-RHD_final$SD_1 <- abs(RHD_final$SD_1)
-RHD_final$SD_2 <- abs(RHD_final$SD_2)
+# Data imputation: take the studies that have meaningful sd's, create a model predicting sd from #mean, sample size and potentially other relevant factors, check how good the predictions are and if so, apply the model to the data from the studies without meaningful sd's.
 
 ### for SD_1 (RHD): problem in intensity_variability
 intensity_0_RHD1 <- RHD_final %>% subset(SD_1 == 0)
 intensity_RHD1 <- RHD_final %>% subset(feature == "intensity_variability" & SD_1 > 0)
-mean(intensity_RHD1$SD_1)
 
 # models, x = mean, n = sample size
 m1_RHD1 <- lm(SD_1 ~ x_1, intensity_RHD1)
-m2_RHD1 <- lm(SD_1 ~ x_1 + n_1, intensity_RHD1)
-m3_RHD1 <- lm(SD_1 ~ x_1*n_1, intensity_RHD1) 
+m2_RHD1 <- lm(SD_1 ~ n_1, intensity_RHD1)
+m3_RHD1 <- lm(SD_1 ~ x_1 + n_1, intensity_RHD1)
+m4_RHD1 <- lm(SD_1 ~ x_1*n_1, intensity_RHD1) 
 summary(m1_RHD1)
 summary(m2_RHD1)
 summary(m3_RHD1)
+summary(m4_RHD1) # best when looking at adjusted R-squared (0.97)
 
 # test on actual data
 p1_RHD1 <- predict(m1_RHD1, intensity_RHD1)
 p2_RHD1 <- predict(m2_RHD1, intensity_RHD1)
 p3_RHD1 <- predict(m3_RHD1, intensity_RHD1)
+p4_RHD1 <- predict(m4_RHD1, intensity_RHD1)
 
-# RMSE: we need to compare it to the actual data and not to 0?
+# RMSE: we need to compare it to the actual data and not to 0
 ModelMetrics::rmse(intensity_RHD1$SD_1, p1_RHD1)
 ModelMetrics::rmse(intensity_RHD1$SD_1, p2_RHD1)
 ModelMetrics::rmse(intensity_RHD1$SD_1, p3_RHD1)
+ModelMetrics::rmse(intensity_RHD1$SD_1, p4_RHD1) # smallest root mean squared error (0.29)
 
 # apply to real data
-pp_RHD1 <- predict(m3_RHD1, intensity_0_RHD1)
+pp_RHD1 <- predict(m4_RHD1, intensity_0_RHD1)
 pp_RHD1
 
-RHD_final$SD_1[RHD_final$SD_1 == 0] <- predict(m3_RHD1, intensity_0_RHD1)
+RHD_final$SD_1[RHD_final$SD_1 == 0] <- predict(m4_RHD1, intensity_0_RHD1)
 
 ### for SD_2 (HC): problem in intensity_variability
 intensity_0_RHD2 <- RHD_final %>% subset(SD_2 == 0)
 intensity_RHD2 <- RHD_final %>% subset(feature == "intensity_variability" & SD_2 > 0)
-mean(intensity_RHD2$SD_2, na.rm = T)
 
 # models, x = mean, n = sample size
 m1_RHD2 <- lm(SD_2 ~ x_2, intensity_RHD2)
-m2_RHD2 <- lm(SD_2 ~ x_2 + n_2, intensity_RHD2)
-m3_RHD2 <- lm(SD_2 ~ x_2*n_2, intensity_RHD2) 
-# m4 <- lm(SD_2 ~ x_2 + n_2 + unit, intensity) 
+m2_RHD2 <- lm(SD_2 ~ n_2, intensity_RHD2)
+m3_RHD2 <- lm(SD_2 ~ x_2 + n_2, intensity_RHD2)
+m4_RHD2 <- lm(SD_2 ~ x_2*n_2, intensity_RHD2)
 summary(m1_RHD2)
 summary(m2_RHD2)
 summary(m3_RHD2)
-# summary(m4)
+summary(m4_RHD2) # best when looking at adjusted R-squared (0.88)
 
 # test on actual data
 p1_RHD2 <- predict(m1_RHD2, intensity_RHD2)
 p2_RHD2 <- predict(m2_RHD2, intensity_RHD2)
 p3_RHD2 <- predict(m3_RHD2, intensity_RHD2)
-#p4 <- predict(m4, intensity)
+p4_RHD2 <- predict(m4_RHD2, intensity_RHD2)
 
-# RMSE: we need to compare it to the actual data and not to 0?
+# RMSE: we need to compare it to the actual data and not to 0
 ModelMetrics::rmse(intensity_RHD2$SD_2, p1_RHD2)
 ModelMetrics::rmse(intensity_RHD2$SD_2, p2_RHD2)
-ModelMetrics::rmse(intensity_RHD2$SD_2, p3_RHD2) #best
-#ModelMetrics::rmse(intensity$SD_2, p4)
+ModelMetrics::rmse(intensity_RHD2$SD_2, p3_RHD2)
+ModelMetrics::rmse(intensity_RHD2$SD_2, p4_RHD2) # smallest root mean squared error (0.57)
 
 # apply to real data
-pp_RHD2 <- predict(m3_RHD2, intensity_0_RHD2)
+pp_RHD2 <- predict(m4_RHD2, intensity_0_RHD2)
 pp_RHD2
 
 #save to data
-RHD_final$SD_2[RHD_final$SD_2 == 0 & !is.na(RHD_final$SD_2)] <- predict(m3_RHD2, intensity_0_RHD2)
-
-mean(RHD_final$SD_1)
-mean(RHD_final$SD_2)
+RHD_final$SD_2[RHD_final$SD_2 == 0 & !is.na(RHD_final$SD_2)] <- predict(m4_RHD2, intensity_0_RHD2)
 
 
 #### LEFT HEMISPHERE DAMAGE
 
-LHD_final$SD_1 <- abs(LHD_final$SD_1)
-LHD_final$SD_2 <- abs(LHD_final$SD_2)
-
 ### for SD_1 (LHD)
 intensity_0_LHD1 <- LHD_final %>% subset(SD_1 == 0)
 intensity_LHD1 <- LHD_final %>% subset(feature == "intensity_variability" & SD_1 > 0)
-mean(intensity_LHD1$SD_1, na.rm = T)
+# mean(intensity_LHD1$SD_1, na.rm = T)
 
 # models, x = mean, n = sample size
 m1_LHD1 <- lm(SD_1 ~ x_1, intensity_LHD1)
-m2_LHD1 <- lm(SD_1 ~ x_1 + n_1, intensity_LHD1)
-m3_LHD1 <- lm(SD_1 ~ x_1*n_1, intensity_LHD1) 
+m2_LHD1 <- lm(SD_1 ~ n_1, intensity_LHD1)
+m3_LHD1 <- lm(SD_1 ~ x_1 + n_1, intensity_LHD1)
+m4_LHD1 <- lm(SD_1 ~ x_1*n_1, intensity_LHD1) 
 summary(m1_LHD1)
 summary(m2_LHD1)
-summary(m3_LHD1)
+summary(m3_LHD1) # best when looking at adjusted R-squared (0.86)
+summary(m4_LHD1) # best when looking at adjusted R-squared (0.86)
 
 # test on actual data
 p1_LHD1 <- predict(m1_LHD1, intensity_LHD1)
-p1_LHD1
 p2_LHD1 <- predict(m2_LHD1, intensity_LHD1)
-p2_LHD1
 p3_LHD1 <- predict(m3_LHD1, intensity_LHD1)
-p3_LHD1
+p4_LHD1 <- predict(m4_LHD1, intensity_LHD1)
 
 # RMSE: we need to compare it to the actual data and not to 0?
 ModelMetrics::rmse(intensity_LHD1$SD_1, p1_LHD1)
 ModelMetrics::rmse(intensity_LHD1$SD_1, p2_LHD1)
-ModelMetrics::rmse(intensity_LHD1$SD_1, p3_LHD1) #best
+ModelMetrics::rmse(intensity_LHD1$SD_1, p3_LHD1)
+ModelMetrics::rmse(intensity_LHD1$SD_1, p4_LHD1) # smallest root mean squared error (0.03)
 
 # apply to real data
-pp_LHD1 <- predict(m3_LHD1, intensity_0_LHD1)
+pp_LHD1 <- predict(m4_LHD1, intensity_0_LHD1)
 pp_LHD1
 
 # save to data
-LHD_final$SD_1[LHD_final$SD_1 == 0 & !is.na(LHD_final$SD_1)] <- predict(m3_LHD1, intensity_0_LHD1)
+LHD_final$SD_1[LHD_final$SD_1 == 0 & !is.na(LHD_final$SD_1)] <- predict(m4_LHD1, intensity_0_LHD1)
 
 
 ### SD_2
-intensity_0_LHD2 <- LHD_final %>% subset(SD_2 == 0)
-intensity_LHD2 <- LHD_final %>% subset(feature == "intensity_variability" & SD_2 > 0)
-mean(intensity_LHD2$SD_2, na.rm = T)
-
-# models, x = mean, n = sample size
-m1_LHD2 <- lm(SD_2 ~ x_2, intensity_LHD2)
-m2_LHD2 <- lm(SD_2 ~ x_2 + n_2, intensity_LHD2)
-m3_LHD2 <- lm(SD_2 ~ x_2*n_2, intensity_LHD2) 
-summary(m1_LHD2)
-summary(m2_LHD2)
-summary(m3_LHD2)
-
-# test on actual data
-p1_LHD2 <- predict(m1_LHD2, intensity_LHD2)
-p2_LHD2 <- predict(m2_LHD2, intensity_LHD2)
-p3_LHD2 <- predict(m3_LHD2, intensity_LHD2)
-p3_LHD2
-
-# RMSE: we need to compare it to the actual data and not to 0?
-ModelMetrics::rmse(intensity_LHD2$SD_2, p1_LHD2)
-ModelMetrics::rmse(intensity_LHD2$SD_2, p2_LHD2)
-ModelMetrics::rmse(intensity_LHD2$SD_2, p3_LHD2) #best
-
-# apply to real data
-pp_LHD2 <- predict(m3_LHD2, intensity_0_LHD2)
-pp_LHD2
-
-LHD_final$SD_2[LHD_final$SD_2 == 0 & !is.na(LHD_final$SD_2)] <- predict(m3_LHD2, intensity_0_LHD2)
-
-
+# Group 2 is the same group of healthy controls in both RHD and LHD, and the former predictions can therefore be imputed to the LHD dataset as well.
+LHD_final$SD_2[LHD_final$SD_2 == 0 & !is.na(LHD_final$SD_2)] <- predict(m4_RHD2, intensity_0_RHD2)
 ```
 
 ```{r}
 # write df
 RHD_final <- write_csv(RHD_final, "preprodata/RHD_final.csv")
 LHD_final <- write_csv(LHD_final, "preprodata/LHD_final.csv")
-
 ```
 
 
