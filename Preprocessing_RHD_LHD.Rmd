@@ -135,9 +135,9 @@ task_type, task_type_spec, participant_design
 ```{r}
 # task_type
 RHD$task_type <- str_extract(RHD$Task, "[Cc]onstrained") #[Cc]onstrained" if also including free and constrained
-RHD$task_type <- ifelse(RHD$task_type == "Constrained", "constrained", NA)
-RHD$task_type[is.na(RHD$task_type)] <- "free"
-RHD$task_type[81:83] <- "constrained" # adding constrained to the constrained experiments within this study (the first one is free, and these three are constrained)
+RHD$task_type <- ifelse(RHD$task_type == "Constrained", "constrained_production", NA)
+RHD$task_type[is.na(RHD$task_type)] <- "free_monological_production"
+RHD$task_type[81:83] <- "constrained_production" # adding constrained to the constrained experiments within this study (the first one is free, and these three are constrained)
 
 # task_type_spec
 RHD$task_type_spec <- str_extract(RHD$Task, "(?<=\\().+?(?=\\))")

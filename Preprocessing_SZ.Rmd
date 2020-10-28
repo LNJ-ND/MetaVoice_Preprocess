@@ -14,7 +14,7 @@ pacman::p_load(tidyverse,metafor,lmerTest,readxl)
 ```{r}
 #load dataframe
 d <- as.data.frame(read_excel("rawdata/Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx"))
-sz_final <- read_csv("preprodata/sz_final.csv")
+#sz_final <- read_csv("preprodata/sz_final.csv")
 
 #only want SZ
 sz <- d %>% subset(DIAGNOSIS == "SZ")
@@ -164,7 +164,7 @@ sz$same_sample <- c("A", "B", "C", "C", "D", "E", "F", "G", "G", "H", "I", "J", 
 # TYPE_OF_TASK - To lower
 sz$TYPE_OF_TASK <- tolower(sz$TYPE_OF_TASK)
 # TYPE_OF_TASK - constr -> constrained
-sz$TYPE_OF_TASK <- ifelse(sz$TYPE_OF_TASK == "constr", "constrained", sz$TYPE_OF_TASK)
+sz$TYPE_OF_TASK <- ifelse(sz$TYPE_OF_TASK == "constr", "constrained_production", ifelse(sz$TYPE_OF_TASK == "social", "social_interaction", ifelse(sz$TYPE_OF_TASK == "free", "free_monological_production", NA)))
 
 # participant_design
 sz$participant_design <- "between"
