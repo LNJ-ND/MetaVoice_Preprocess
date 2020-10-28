@@ -219,12 +219,11 @@ ASD$expt_unique <- make.unique(ASD$short_cite)
 #%>% str_extract ("\\d$")
 
 #make constrained production to constrained
-ASD$Task[ASD$Task == "Constrained Production"] <- "Constrained"
+ASD$Task[ASD$Task == "Constrained Production" | ASD$Task == "Constrained" ] <- "constrained_production"
 #make social interaction to social_interaction
 ASD$Task[ASD$Task == "Social Interaction"] <- "social_interaction"
-#make non-capital letters
-ASD$Task <- tolower(ASD$Task)
-ASD$Task2 <- tolower(ASD$Task2)
+#make spontaneous to free_monological_production
+ASD$Task[ASD$Task == "Spontaneous"] <- "free_monological_production"
 
 #participant design column
 ASD$participant_design <- "between"
