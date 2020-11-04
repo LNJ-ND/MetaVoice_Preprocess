@@ -347,11 +347,11 @@ feature <- c(rep("speech_duration", 5), #speech duration speech_duration
             rep("pitch_entropy", 5),
             rep("f1_variability", 5),
             rep("f2_variability", 5),
-            rep("pitch_bandwidth", 5),
+            rep("formant_bandwidth", 5), #change pitch_bandwidth to formant_bandwidth as in original paper
             rep("pitch_range", 5), # only one value
             rep("intensity", 5),
             rep("intensity_variability", 5),
-            rep("intensity_variability_entropy", 5))
+            rep("formant_amplitude", 5)) #change intensity_variability_entropy to formant_amplitude as in original paper
 
 translation_mat <- cbind(original_columns, feature)
 names(translation_mat)[1] <- "column"
