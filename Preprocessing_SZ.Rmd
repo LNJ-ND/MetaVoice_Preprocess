@@ -10,12 +10,16 @@ knitr::opts_chunk$set(echo = TRUE)
 pacman::p_load(tidyverse,metafor,lmerTest,readxl)
 ```
 
-
+load data
 ```{r}
 #load dataframe
 d <- as.data.frame(read_excel("rawdata/Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx"))
 #sz_final <- read_csv("preprodata/sz_final.csv")
 
+```
+
+subsetting and correcting values
+```{r}
 #only want SZ
 sz <- d %>% subset(DIAGNOSIS == "SZ")
 nrow(sz)
@@ -34,9 +38,18 @@ sz[39,7] <- "Martinez et al. (2015)"
 sz[1,4] <- "Is this my voice or yours? The role of emotion and acoustic quality in self-other voice discrimination in schizophrenia"
 sz[1,5] <- "Pinheiro, A.P., Rezaii, N., Rauber, A., Niznikiewicz, M."
 
+#Correting Article for Graux 
+sz[10,7] <- "Graux et al. (2015)"
+```
+
+study id
+```{r}
 #creating study_ID from two columns
 sz$study_ID <- paste(word(sz$Article, 1), sz$Year_publication, sep = "")
+```
 
+long cite
+```{r}
 # long_cite, peer_reviewed, coder
 sz$long_cite <- c(
   "Pinheiro, A.P., Rezaii, N., Rauber, A., Niznikiewicz, M., 2016. Is this my voice or yours? The role of emotion and acoustic quality in self-other voice discrimination in schizophrenia. Cogn. Neuropsychiatry 21, 335–353.",
@@ -91,7 +104,10 @@ sz$long_cite <- c(
   "Çokal, D., Zimmerer, V., Turkington, D., Ferrier, N., Varley, R., Watson, S., & Hinzen, W. (2019). Disturbing the rhythm of thought: Speech pausing patterns in schizophrenia, with and without formal thought disorder. PloS one, 14(5), e0217404.",
   "Le, T. P. (2018). Vocal Expression In Schizophrenia: Examining The Role Of Vocal Accommodation In Clinical Ratings Of Speech."
 )
+```
 
+doi
+```{r}
 sz$doi <- c(
   "https://doi.org/10.1080/13546805.2016.1208611",
   "https://doi.org/10.11919/j.issn.1002-0829.216025",
@@ -145,37 +161,157 @@ sz$doi <- c(
   "https://doi.org/10.1371/journal.pone.0217404",
   NA
   )
+
+```
+
+peer reviwed, coder
+```{r}
 sz$peer_reviewed <- c("yes", NA, rep("yes", 16), "yes", rep("yes", 17), NA, rep("yes", 6), NA, NA, rep("yes", 5), NA)
 sz$coder <- "LNJ, ND"
+```
 
+expt_unique and same_sample
+```{r}
 # expt_unqiue from short cite (= Article)
 sz$expt_unique <- make.unique(sz$Article)
 
-# expt_num
-# sz$expt_num <- make.unique(sz$Article)
-# sz$expt_num <- str_extract(sz$expt_num, "\\d+$")
-
-# expt_num manually
-# sz$expt_num <- c(rep(NA, 2), 1, 2, rep(NA, 3), 1, 2, rep(NA, 17), 1, 2, NA, 1, 2, 3, rep(NA, 13), 1, 2, 1, 2, rep(NA, 2))
-
 # same_sample
 sz$same_sample <- c("A", "B", "C", "C", "D", "E", "F", "G", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ", "AK", "AK", "AL", "AM", "AN", "AO", "AP", "AP", "AQ", "AQ", "AR", "AS")
+```
 
+task_type
+```{r}
 # TYPE_OF_TASK - To lower
 sz$TYPE_OF_TASK <- tolower(sz$TYPE_OF_TASK)
 # TYPE_OF_TASK - constr -> constrained
 sz$TYPE_OF_TASK <- ifelse(sz$TYPE_OF_TASK == "constr", "constrained_production", ifelse(sz$TYPE_OF_TASK == "social", "social_interaction", ifelse(sz$TYPE_OF_TASK == "free", "free_monological_production", NA)))
+```
 
+participant design
+```{r}
 # participant_design
 sz$participant_design <- "between"
+```
 
-# native_lang
-sz$native_language <- NA
-  
+native language and native_language_specification
+```{r}
+# native language
+sz$native_language[sz$expt_unique == "Pinheiro et al. (2016)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Zhang et al. (2016)" ] <- "Chinese"
+sz$native_language[sz$expt_unique == "Bernardini et al. (2016)"] <- "Italian"
+sz$native_language[sz$expt_unique == "Bernardini et al. (2016).1"] <- "English"
+sz$native_language[sz$expt_unique == "Martínez et al. (2015)"] <- "Spanish"
+sz$native_language[sz$expt_unique == "Alpert et al. (2002)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Rapcan et al. (2010)"] <- "English" # Irish
+sz$native_language[sz$expt_unique == "Cannizzaro et al. (2005)"] <- "German" #but american researcher?
+sz$native_language[sz$expt_unique == "Cannizzaro et al. (2005).1"] <- "German"
+sz$native_language[sz$expt_unique == "Graux et al. (2015)"] <- "French" 
+sz$native_language[sz$expt_unique == "McGilloway et al. (2003)"] <- "English" # Irish
+sz$native_language[sz$expt_unique == "Sison et al. (1996)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Cohen et al. (2008)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Cohen et al. (2017)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Cohen et al. (2013)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Cohen et al. (2012)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Alpert et al. (1997)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Alpert et al. (2000)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Alpert et al. (1977)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Covington et al. (2012)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Matsumoto et al. (2013)"] <- "English" # probably bitish
+sz$native_language[sz$expt_unique == "Alpert et al. (1994)"] <- "English" #probbaly american
+sz$native_language[sz$expt_unique == "Kring et al. (1994)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Pinheiro et al. (2017)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Resnick et al. (1984)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Mandal et al. (1990)"] <- "Hindi"
+sz$native_language[sz$expt_unique == "Tavano et al. (2008)"] <- "Italian"
+sz$native_language[sz$expt_unique == "Tavano et al. (2008).1"] <- "Italian"
+sz$native_language[sz$expt_unique == "Perlini et al. (2012)"] <- "Italian"
+sz$native_language[sz$expt_unique == "Rutter et al. (1977)"] <- NA
+sz$native_language[sz$expt_unique == "Rutter et al. (1977).1"] <- NA
+sz$native_language[sz$expt_unique == "Rutter et al. (1977).2"] <- NA
+sz$native_language[sz$expt_unique == "St-Hilaire et al. (2008)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Shaw (1999)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Docherty et al. (2012)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Wan et al. (2008)"] <- "English" # British
+sz$native_language[sz$expt_unique == "Rochester et al. (1977)"] <- "English"  #NA
+sz$native_language[sz$expt_unique == "Tolkmitt (1982)"] <- "German"
+sz$native_language[sz$expt_unique == "Martinez et al. (2015)"] <- "Spanish"
+sz$native_language[sz$expt_unique == "Compton et al. (2018)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Compton et al. (2018).1"] <- "English" # American
+sz$native_language[sz$expt_unique == "Salomè et al. (2002)"] <- "French"
+sz$native_language[sz$expt_unique == "Alpert et al. (1995)"] <- NA
+sz$native_language[sz$expt_unique == "Kliper et al. (2010)"] <- NA
+sz$native_language[sz$expt_unique == "Kliper et al. (2015)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Ross et al. (2001)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Ross et al. (2001).1"] <- "English" # American
+sz$native_language[sz$expt_unique == "Meaux et al. (2018)"] <- "English" # American
+sz$native_language[sz$expt_unique == "Meaux et al. (2018).1"] <- "English" # American
+sz$native_language[sz$expt_unique == "Cockal et al. (2019)"] <- "English" # British
+sz$native_language[sz$expt_unique == "Thanh (2018)"] <- "English" # American
+
+# native language spec 
+sz$native_language_specification[sz$expt_unique == "Pinheiro et al. (2016)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Zhang et al. (2016)" ] <- "Chinese"
+sz$native_language_specification[sz$expt_unique == "Bernardini et al. (2016)"] <- "Italian"
+sz$native_language_specification[sz$expt_unique == "Bernardini et al. (2016).1"] <- "American English"
+sz$native_language_specification[sz$expt_unique == "Martínez et al. (2015)"] <- "Spanish"
+sz$native_language_specification[sz$expt_unique == "Alpert et al. (2002)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Rapcan et al. (2010)"] <- "Irish English" # Irish
+sz$native_language_specification[sz$expt_unique == "Cannizzaro et al. (2005)"] <- "German" #but american researcher?
+sz$native_language_specification[sz$expt_unique == "Cannizzaro et al. (2005).1"] <- "German"
+sz$native_language_specification[sz$expt_unique == "Graux et al. (2015)"] <- "French" 
+sz$native_language_specification[sz$expt_unique == "McGilloway et al. (2003)"] <- "Irish English" # Irish
+sz$native_language_specification[sz$expt_unique == "Sison et al. (1996)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Cohen et al. (2008)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Cohen et al. (2017)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Cohen et al. (2013)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Cohen et al. (2012)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Alpert et al. (1997)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Alpert et al. (2000)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Alpert et al. (1977)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Covington et al. (2012)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Matsumoto et al. (2013)"] <- "British English" # probably bitish
+sz$native_language_specification[sz$expt_unique == "Alpert et al. (1994)"] <- "American English" #probbaly american
+sz$native_language_specification[sz$expt_unique == "Kring et al. (1994)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Pinheiro et al. (2017)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Resnick et al. (1984)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Mandal et al. (1990)"] <- "Hindi"
+sz$native_language_specification[sz$expt_unique == "Tavano et al. (2008)"] <- "Italian"
+sz$native_language_specification[sz$expt_unique == "Tavano et al. (2008).1"] <- "Italian"
+sz$native_language_specification[sz$expt_unique == "Perlini et al. (2012)"] <- "Italian"
+sz$native_language_specification[sz$expt_unique == "Rutter et al. (1977)"] <- NA
+sz$native_language_specification[sz$expt_unique == "Rutter et al. (1977).1"] <- NA
+sz$native_language_specification[sz$expt_unique == "Rutter et al. (1977).2"] <- NA
+sz$native_language_specification[sz$expt_unique == "St-Hilaire et al. (2008)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Shaw (1999)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Docherty et al. (2012)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Wan et al. (2008)"] <- "British English" # British
+sz$native_language_specification[sz$expt_unique == "Rochester et al. (1977)"] <- "English"  #NA
+sz$native_language_specification[sz$expt_unique == "Tolkmitt (1982)"] <- "German"
+sz$native_language_specification[sz$expt_unique == "Martinez et al. (2015)"] <- "Spanish"
+sz$native_language_specification[sz$expt_unique == "Compton et al. (2018)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Compton et al. (2018).1"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Salomè et al. (2002)"] <- "French"
+sz$native_language_specification[sz$expt_unique == "Alpert et al. (1995)"] <- NA
+sz$native_language_specification[sz$expt_unique == "Kliper et al. (2010)"] <- NA
+sz$native_language_specification[sz$expt_unique == "Kliper et al. (2015)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Ross et al. (2001)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Ross et al. (2001).1"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Meaux et al. (2018)"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Meaux et al. (2018).1"] <- "American English" # American
+sz$native_language_specification[sz$expt_unique == "Cockal et al. (2019)"] <- "British English" # British
+sz$native_language_specification[sz$expt_unique == "Thanh (2018)"] <- "American English" # American
+
+```
+
+group names
+```{r}
 # group_name_1, group_name_2
 sz$group_name_1 <- "SZ"
 sz$group_name_2 <- "HC"
+```
 
+make long format, select columns, change column names and save final data
+```{r}
 # Long format put down all the feauture columns 
 sz_long <- sz %>% 
   gather(column, cell, 28:147, factor_key = TRUE) 
@@ -251,6 +387,7 @@ sz_col <- sz_clean %>%
     task_type = TYPE_OF_TASK,
     participant_design,
     native_language,
+    native_language_specification,
     group_name_1,
     group_name_2,
     n_1 = SAMPLE_SIZE_SZ,
@@ -283,7 +420,7 @@ sz_col <- sz_clean %>%
 sz_final <- sz_col[!with(sz_col, is.na(x_1) & is.na(x_2) & is.na(SD_1) & is.na(SD_2)),]
 
 # write df
-sz_final <- write_csv(sz_final, "preprodata/sz_final.csv")
+sz_final <- write_csv(sz_final, "preprodata/SCZ_final.csv")
 
 # checking which features have no NAs in these columns
 sz_feature <- sz_final[!is.na(sz_final$x_1) & !is.na(sz_final$x_2) & !is.na(sz_final$SD_1) & !is.na(sz_final$SD_2),]
