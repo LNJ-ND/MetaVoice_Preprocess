@@ -19,11 +19,6 @@ RHD <- read_csv("rawdata/data-table_RHD_osf.csv")
 # LHD_final <- read_csv("preprodata/LHD_final.csv")
 ```
 
-correcting year
-```{r}
-RHD$Year[RHD$study_ID == "Ouellette1994"] <- 1994
-```
-
 study_ID, short_cite
 ```{r}
 # study_ID
@@ -31,6 +26,11 @@ RHD$study_ID <- paste(word(RHD$Article, 1), str_extract(RHD$Article, "\\d{4}[a-z
 
 # short_cite
 RHD$short_cite <- gsub("et al", "et al.", RHD$Article)
+```
+
+correcting year
+```{r}
+RHD$Year[RHD$study_ID == "Ouellette1994"] <- 1994
 ```
 
 long_cite
@@ -174,6 +174,29 @@ prosody_type
 ```{r}
 RHD$prosody_type <- ifelse(RHD$Prosody_Type == "Ling", "linguistic", ifelse(RHD$Prosody_Type == "Emo", "emotional", NA))
 ```
+
+add mssing native language, native language specification
+```{r}
+# native language
+RHD$Language[RHD$study_ID == "Emmorey1987"] <- "English"
+RHD$Language[RHD$study_ID == "Behrens1988"] <- "English"
+RHD$Language[RHD$study_ID == "Ouellette1994"] <- "English"
+RHD$Language[RHD$study_ID == "Baum2001"] <- "English"
+RHD$Language[RHD$study_ID == "Hird2003"] <- "English"
+RHD$Language[RHD$study_ID == "Ross2008"] <- "English"
+RHD$Language[RHD$study_ID == "Wright2018"] <- "English"
+
+# native language specification
+# RHD$native_language_specification[RHD$study_ID == "Emmorey1987"] <- "American English"
+# RHD$native_language_specification[RHD$study_ID == "Behrens1988"] <- "American English"
+# RHD$native_language_specification[RHD$study_ID == "Ouellette1994"] <- "NA"
+# RHD$native_language_specification[RHD$study_ID == "Baum2001"] <- "NA"
+# RHD$native_language_specification[RHD$study_ID == "Hird2003"] <- "Australian English"
+# RHD$native_language_specification[RHD$study_ID == "Ross2008"] <- "American English"
+# RHD$native_language_specification[RHD$study_ID == "Wright2018"] <- "American English"
+
+```
+
 
 Select, rename, rearrange
 ```{r}
