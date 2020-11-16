@@ -7,7 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-pacman::p_load(tidyverse,metafor,lmerTest,readxl)
+library(pacman)
+pacman::p_load(tidyverse,metafor,lmerTest, lme4) #readxl
 ```
 
 Reading data
@@ -96,18 +97,11 @@ RHD$peer_reviewed <- ifelse(RHD$study_ID == "Emmorey1987", "yes",
                                                                                                                                  ifelse(RHD$study_ID == "Pell1999b", "yes", NA))))))))))))))))
 ```
 
-coder, (commented out expt_num), expt_unique
+coder, (commented out expt_num)
 ```{r}
 # coder
 RHD$coder <- "LNJ, ND"
 
-# # expt_num
-# RHD$expt_num <- paste(RHD$study_ID, RHD$`Within-paper_differentiator`, sep = "")
-# RHD$expt_num <- make.unique(RHD$expt_num)
-# RHD$expt_num <- str_extract(RHD$expt_num, "\\d+$")
-
-# expt_unique
-RHD$expt_unique <- make.unique(RHD$short_cite)
 ```
 
 same_sample
@@ -196,6 +190,14 @@ RHD$Language[RHD$study_ID == "Wright2018"] <- "English"
 # RHD$native_language_specification[RHD$study_ID == "Wright2018"] <- "American English"
 
 ```
+
+expt_unique
+```{r}
+# expt_unique
+RHD <- RHD %>% group_by(short_cite, `Within-paper_differentiator`) %>% mutate(expt_unique = make.unique(short_cite))
+
+```
+
 
 
 Select, rename, rearrange
