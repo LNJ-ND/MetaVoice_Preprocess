@@ -18,6 +18,9 @@ RHD <- read_csv("rawdata/data-table_RHD_osf.csv")
 
 # RHD_final <- read_csv("preprodata/RHD_final.csv")
 # LHD_final <- read_csv("preprodata/LHD_final.csv")
+
+#change column name of within paper diff
+names(RHD)[6] <- "within_paper_differentiator"
 ```
 
 study_ID, short_cite
@@ -193,8 +196,13 @@ RHD$Language[RHD$study_ID == "Wright2018"] <- "English"
 
 expt_unique
 ```{r}
+
 # expt_unique
-RHD <- RHD %>% group_by(short_cite, `Within-paper_differentiator`) %>% mutate(expt_unique = make.unique(short_cite))
+expt_uni <- RHD %>% group_by(short_cite, within_paper_differentiator) %>%
+  summarise(.groups = "drop_last") %>%
+  mutate(expt_unique = make.unique(short_cite))
+
+RHD <- left_join(RHD, expt_uni, by = c("short_cite", "within_paper_differentiator"))
 
 ```
 
@@ -212,7 +220,7 @@ RHD_col <- RHD %>%
     peer_reviewed,
     coder,
     expt_unique,
-    expt_condition = 'Within-paper_differentiator',
+    expt_condition = within_paper_differentiator,
     same_sample,
     task_type,
     task_type_spec,
@@ -245,7 +253,7 @@ LHD_col <- RHD %>%
     peer_reviewed,
     coder,
     expt_unique,
-    expt_condition = 'Within-paper_differentiator',
+    expt_condition = within_paper_differentiator,
     same_sample,
     task_type,
     task_type_spec,
