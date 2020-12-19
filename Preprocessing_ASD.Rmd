@@ -27,6 +27,13 @@ ASD <- ASD[-c(42:47), ]
 ASD[6,2] <- "Scharfstein"
 ASD[40,2] <- "Hubbard"
 
+#correct data for Parish-Morris2016 study (incorrect in original MA, corrected based request from MA author RF)
+PM_ASD_SD <- 0.002 * sqrt(65) # 0.002 is ASD SE from the original MA dataset, 65 = ASD_N
+PM_TD_SD <- 0.004 * sqrt(17) # 0.004 is TD SE from the original MA dataset, 17 = TD_N
+
+ASD$UtteranceDurationASD_SD <- ifelse(ASD$Author == "Parish-Morris", PM_ASD_SD, ASD$UtteranceDurationASD_SD)
+ASD$UtteranceDurationTD_SD <- ifelse(ASD$Author == "Parish-Morris", PM_TD_SD, ASD$UtteranceDurationTD_SD)
+
 #study_ID column
 ASD$study_ID <- paste0(ASD$Author, ASD$Year)
 
@@ -236,6 +243,10 @@ ASD$group_name_2 <- "HC"
 ASD$n_1_F	<- ASD$ASD_N - ASD$GenderMaleASD
 ASD$n_2_F	<- ASD$TD_N - ASD$GenderMaleTD
 
+#age from months into years
+ASD$mean_age_1 <- ASD$AgeASD_Mean/12
+ASD$mean_age_2 <- ASD$AgeTD_Mean/12
+
 #make long format
 ASD_long <- ASD %>% 
   gather(column, cell, 19:75, factor_key = TRUE) 
@@ -296,7 +307,7 @@ ASD_clean$feature_spec <- ifelse(ASD_clean$feature == "utterance_duration", "utt
 
 ASD_clean$feature[ASD_clean$feature == "utterance_duration" | ASD_clean$feature == "syllable_duration"] <- "speech_duration"
 
-#select final columns and reorder them
+#select final columns and reorder them + changing age to years (from months)
 ASD_col <- ASD_clean %>% 
   select(
     study_ID,
@@ -322,9 +333,11 @@ ASD_col <- ASD_clean %>%
     n_1_M = GenderMaleASD,	
     n_2_M	= GenderMaleTD,
     n_1_F,	
-    n_2_F,	
-    mean_age_1 = AgeASD_Mean,
-    mean_age_2 = AgeTD_Mean,
+    n_2_F,
+    mean_age_1,
+    mean_age_2,
+    mean_age_1_months = AgeASD_Mean,
+    mean_age_2_months = AgeTD_Mean,
     sd_age_1 = AgeASD_SD,
     sd_age_2 = AgeTD_SD,
     feature,
