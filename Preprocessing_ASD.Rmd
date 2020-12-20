@@ -222,7 +222,7 @@ ASD$peer_reviewed	<- c(
 ASD$coder <- "LNJ, ND"
 
 #expt_unique: unique experiment code from short_cite
-ASD$expt_unique <- make.unique(ASD$short_cite) 
+ASD$expt_uni <- make.unique(ASD$short_cite) 
 #%>% str_extract ("\\d$")
 
 #make constrained production to constrained
@@ -306,6 +306,12 @@ ASD_clean$feature_spec <- ifelse(ASD_clean$feature == "utterance_duration", "utt
                                  ifelse(ASD_clean$feature == "syllable_duration", "syllable_duration", NA))
 
 ASD_clean$feature[ASD_clean$feature == "utterance_duration" | ASD_clean$feature == "syllable_duration"] <- "speech_duration"
+
+#expt_unique (overwrite from earlier - long format now)
+ASD_clean <- ASD_clean %>% group_by(feature) %>% 
+  mutate(expt_unique = make.unique(short_cite)) %>% 
+  ungroup()
+
 
 #select final columns and reorder them + changing age to years (from months)
 ASD_col <- ASD_clean %>% 
